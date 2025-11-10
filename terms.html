@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="css/common.css">
+    <title>Bristol Community Events</title>
+    <style>
+            #hero {
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--accent-color);
+        }
+
+        .terms-section {
+      padding: 80px 20px;
+      background-color: var(--background-color);
+      color: #333;
+    }
+
+    .terms-section h3 {
+      color: var(--secondary-color);
+      font-weight: 600;
+      margin-top: 40px;
+    }
+
+    .terms-section p {
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+
+    ul {
+      list-style-type: disc;
+      padding-left: 30px;
+    }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+  <nav class="navbar navbar-expand-lg shadow-sm sticky-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="index.html">BCE</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mx-auto">
+          <li class="nav-item"><a class="nav-link active" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="events.html">Events</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+        </ul>
+
+        <div class="d-flex">
+          <a href="login.html" class="btn btn-login me-2">Login</a>
+          <a href="signup.html" class="btn btn-signup">Sign Up</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+    <div class="container-fluid p-5 text-center" id="hero">
+        <h1 style="color: var(--primary-color);">Terms and Conditions</h1>
+        <p>Last updated: November 2025</p>
+    </div>
+
+    <!-- Terms Section -->
+    <section class="terms-section">
+      <div class="container">
+        <p>
+          Welcome to <strong>Bristol Community Events (BCE)</strong>. These Terms and Conditions outline the rules for using our website,
+          booking events, and managing user accounts. By accessing or using our site, you agree to comply with these terms.
+        </p>
+
+        <h3>1. General Terms</h3>
+        <p>
+          BCE is a student-built platform designed to showcase how event management systems function. Users can browse,
+          filter, and book events such as workshops, exhibitions, sports, and community gatherings. Admins can add, update, and
+          manage events and venues.
+        </p>
+
+        <ul>
+          <li>Users must create an account to book tickets or view booking history.</li>
+          <li>All data provided by users should be accurate and up to date.</li>
+          <li>Admins reserve the right to edit or remove any event if necessary.</li>
+        </ul>
+
+        <h3>2. Event Bookings and Cancellations</h3>
+        <p>
+          Users can book available events through their BCE account. Each venue has a limited capacity, and bookings will
+          close once capacity is reached or the last booking date passes.
+        </p>
+
+        <ul>
+          <li>Bookings can be updated or cancelled through the user’s account dashboard.</li>
+          <li>
+            Cancellations are subject to the following refund and fee rules:
+            <ul>
+              <li><strong>40+ days before event:</strong> No cancellation fee (full refund).</li>
+              <li><strong>25–39 days before event:</strong> 40% of booking price will be charged.</li>
+              <li><strong>Within 25 days of event:</strong> No refund available.</li>
+            </ul>
+          </li>
+          <li>Refunds are processed within 7–14 working days (simulated for coursework purposes).</li>
+          <li>Users cannot transfer bookings to another person.</li>
+        </ul>
+
+        <h3>3. Discounts</h3>
+        <p>
+          The BCE system applies automatic discounts based on booking conditions:
+        </p>
+        <ul>
+          <li><strong>Student Discount:</strong> 10% off ticket price (no ID required – user confirmation only).</li>
+          <li>
+            <strong>Advance Booking Discount:</strong> Between 5%–20% depending on how early the booking is made (up to 60 days in advance).
+          </li>
+        </ul>
+        <p>
+          Discounts are calculated automatically during the checkout process and shown on the generated booking receipt.
+        </p>
+
+        <h3>4. Free and Paid Events</h3>
+        <ul>
+          <li>Some community events are marked as “Free.” Users can still book them to reserve a spot.</li>
+          <li>Paid events display their price clearly, including any discount applied.</li>
+        </ul>
+
+        <h3>5. Dynamic Pricing Policy</h3>
+        <p>
+          Admins may reduce ticket prices for events where less than 50% of tickets are sold within 10 days of the start
+          date. The reduction will be at least 25% to encourage more participation.
+        </p>
+
+        <h3>6. Waiting List Policy</h3>
+        <p>
+          If an event is fully booked, users may join a waiting list. If a cancellation occurs, the first person on the
+          list will be contacted automatically and given priority to book.
+        </p>
+
+        <h3>7. Admin and Management Terms</h3>
+        <ul>
+          <li>Admins must log in using their secure admin credentials.</li>
+          <li>Admins can add, update, or remove events and venues.</li>
+          <li>Admins can view all bookings, generate reports, and manage user accounts.</li>
+          <li>Reports may include event profits, total bookings, and available tickets.</li>
+        </ul>
+
+        <h3>8. Technical and Security Information</h3>
+        <ul>
+          <li>
+            BCE implements security measures such as password hashing, input validation, and SQL injection prevention.
+          </li>
+          <li>User passwords are stored securely and cannot be retrieved once created.</li>
+          <li>No real payment systems are integrated — transactions are simulated for educational purposes.</li>
+        </ul>
+
+        <h3>9. Refunds Policy</h3>
+        <p>
+          Refunds are only applicable for cancellations that meet the timelines outlined above. All refund values will be
+          displayed in the user's booking history and receipt. Refunds cannot be processed for missed events or late
+          cancellations.
+        </p>
+
+        <h3>10. Legal, Ethical, and Privacy Notice</h3>
+        <ul>
+          <li>
+            BCE respects user privacy and follows ethical web practices. Any personal data collected (such as names or
+            emails) is used only for login and booking purposes.
+          </li>
+          <li>We comply with the UK Data Protection principles for educational web projects.</li>
+          <li>Users should avoid sharing account details or passwords with others.</li>
+        </ul>
+
+        <p class="mt-5">
+          These Terms and Conditions are written to align with the assessment specification for the Web Development and
+          Databases module. The policies are educational examples and not legally binding.
+        </p>
+      </div>
+    </section>
+
+<!-- Footer -->
+  <footer class="footer text-white py-5">
+    <div class="container">
+      <div class="row gy-4">
+        <div class="col-md-4">
+          <h5 class="fw-bold">Bristol Community Events</h5>
+          <p class="small">Connecting Bristol through events, culture, and creativity.</p>
+        </div>
+        <div class="col-md-4">
+          <h6 class="fw-semibold">Quick Links</h6>
+          <ul class="list-unstyled small">
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="terms.html">Terms & Conditions</a></li>
+          </ul>
+        </div>
+        <div class="col-md-4">
+          <h6 class="fw-semibold">Contact</h6>
+          <ul class="list-unstyled small">
+            <li>Email: info@bcevents.com</li>
+            <li>Phone: +44 117 000 111</li>
+            <li>Location: Bristol, UK</li>
+          </ul>
+        </div>
+      </div>
+      <hr class="border-light" />
+      <div class="text-center small">© 2025 Bristol Community Events</div>
+    </div>
+  </footer>
+</body>
+</html>

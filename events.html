@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bristol Community Events</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="css/common.css" />
+  <style>
+    /* Filters */
+    .category-btn {
+      margin: 8px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 20px;
+      background-color: var(--primary-color);
+      color: #fff;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+    .category-btn:hover {
+      background-color: var(--secondary-color);
+    }
+    .filters {
+      background-color: var(--accent-color);
+      padding: 30px 0;
+    }
+    .category-label {
+      background-color: var(--secondary-color);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 768px) {
+      .filters form {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg shadow-sm sticky-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="index.html">BCE</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mx-auto">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link active" href="events.html">Events</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+        </ul>
+
+        <div class="d-flex">
+          <a href="login.html" class="btn btn-login me-2">Login</a>
+          <a href="signup.html" class="btn btn-signup">Sign Up</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section id="hero" class="text-center p-5" style="background-color: var(--accent-color);">
+    <h1 class="fw-bold" style="color: var(--primary-color);">Browse All Events</h1>
+    <p class="text-muted">Find all upcoming and past events across Bristol.</p>
+  </section>
+
+  <!-- Filters -->
+  <section class="filters">
+    <div class="container text-center">
+      <h2 style="color: var(--secondary-color);">Event Categories</h2>
+      <div class="d-flex justify-content-center flex-wrap mt-3 mb-4">
+        <button class="category-btn">Exhibitions</button>
+        <button class="category-btn">Workshops</button>
+        <button class="category-btn">Sports</button>
+        <button class="category-btn">Musical</button>
+        <button class="category-btn">Religious</button>
+      </div>
+
+      <form class="d-flex justify-content-center flex-wrap gap-3">
+        <input type="date" class="form-control" style="max-width: 200px;">
+        <input type="month" class="form-control" style="max-width: 200px;">
+        <div class="form-check align-self-center">
+          <input class="form-check-input" type="checkbox" id="freeEvents" />
+          <label class="form-check-label" for="freeEvents">Free Events</label>
+        </div>
+        <button class="btn" style="background-color: var(--primary-color); color: white;">Apply Filters</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Search + All Events -->
+  <section class="container py-5">
+    <form class="d-flex justify-content-center mb-5">
+      <input class="form-control me-2" type="text" placeholder="Search events..." />
+      <button class="btn" style="background-color: var(--primary-color); color: white;">Search</button>
+    </form>
+
+    <h2 class="text-center mb-5" style="color: var(--secondary-color);">All Events</h2>
+
+    <div class="row g-4">
+      <!-- Card 1 -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card event-card h-100 border-0 shadow-sm">
+          <img src="images/jazz-festival.jpg" class="card-img-top" alt="Jazz Festival">
+          <div class="card-body">
+            <span class="category-label">Music</span>
+            <h5 class="card-title mt-2">Bristol Jazz Festival 2025</h5>
+            <p class="text-muted">A celebration of Bristol’s musical culture with performances from local artists.</p>
+            <ul class="list-unstyled small text-secondary">
+              <li><strong>Date:</strong> March 12–14, 2025</li>
+              <li><strong>Venue:</strong> Arnolfini Arts Centre</li>
+              <li><strong>Tickets:</strong> £25 / Free for students</li>
+            </ul>
+            <a href="event.html" class="btn btn-primary mt-2">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card event-card h-100 border-0 shadow-sm">
+          <img src="images/art-workshop.jpg" class="card-img-top" alt="Art Workshop">
+          <div class="card-body">
+            <span class="category-label">Workshop</span>
+            <h5 class="card-title mt-2">Creative Art Workshop</h5>
+            <p class="text-muted">Join a weekend of painting, crafting, and inspiration with local artists.</p>
+            <ul class="list-unstyled small text-secondary">
+              <li><strong>Date:</strong> March 22, 2025</li>
+              <li><strong>Venue:</strong> Creative Space B</li>
+              <li><strong>Tickets:</strong> £30</li>
+            </ul>
+            <a href="event1.html" class="btn btn-primary mt-2">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+       <div class="col-12 col-md-6 col-lg-4">
+        <div class="card event-card h-100 border-0 shadow-sm">
+          <img src="images/art-exhibition.jpg" class="card-img-top" alt="Art Exhibition">
+          <div class="card-body">
+            <span class="category-label">Exhibition</span>
+            <h5 class="card-title mt-2">Community Art Exhibition</h5>
+            <p class="text-muted">Explore artwork from local schools and artists, celebrating creativity in Bristol.</p>
+            <ul class="list-unstyled small text-secondary">
+              <li><strong>Date:</strong> April 5–10, 2025</li>
+              <li><strong>Venue:</strong> UWE Exhibition Centre</li>
+              <li><strong>Tickets:</strong> Free Entry</li>
+            </ul>
+            <a href="event2.html" class="btn btn-primary mt-2">View Details</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<!-- Footer -->
+  <footer class="footer text-white py-5">
+    <div class="container">
+      <div class="row gy-4">
+        <div class="col-md-4">
+          <h5 class="fw-bold">Bristol Community Events</h5>
+          <p class="small">Connecting Bristol through events, culture, and creativity.</p>
+        </div>
+        <div class="col-md-4">
+          <h6 class="fw-semibold">Quick Links</h6>
+          <ul class="list-unstyled small">
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="terms.html">Terms & Conditions</a></li>
+          </ul>
+        </div>
+        <div class="col-md-4">
+          <h6 class="fw-semibold">Contact</h6>
+          <ul class="list-unstyled small">
+            <li>Email: info@bcevents.com</li>
+            <li>Phone: +44 117 000 111</li>
+            <li>Location: Bristol, UK</li>
+          </ul>
+        </div>
+      </div>
+      <hr class="border-light" />
+      <div class="text-center small">© 2025 Bristol Community Events</div>
+    </div>
+  </footer>
+
+</body>
+</html>
