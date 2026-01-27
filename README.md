@@ -136,8 +136,9 @@ event_id → venue_id and venue_id → capacity, so event_id → capacity (trans
     - venues(venue_id, capacity)
     - events(event_id, venue_id)
 
+<img width="917" height="708" alt="erdiagram" src="https://github.com/user-attachments/assets/cf6b9080-ff54-4fff-be07-d477e0726c14" />
 
-<!-- add er diagram image -->
+
 
 **Physical Database**
 
