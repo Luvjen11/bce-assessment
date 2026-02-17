@@ -1,0 +1,96 @@
+
+{% extends "base.html" %}
+{% block head %}
+{{ super()}}
+    <style>
+    body {
+      background-color: var(--background-color);
+      font-family: var(--font-family);
+    }
+    .signup-container {
+      margin: 40px 0;
+      min-height: 80vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .signup-box {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      padding: 40px 30px;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
+
+    .signup-box h2 {
+      color: var(--primary-color);
+      margin-bottom: 25px;
+      font-weight: 700;
+    }
+
+    .form-control {
+      border-radius: 6px;
+      border: 1px solid #ddd;
+    }
+
+    .btn-signup-page {
+      background-color: var(--primary-color);
+      color: white;
+      font-weight: 600;
+      width: 100%;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      transition: 0.3s;
+    }
+
+    .btn-signup-page:hover {
+      background-color: var(--secondary-color);
+    }
+
+    .extra-links {
+      margin-top: 15px;
+      font-size: 0.9rem;
+    }
+
+    a {
+      color: var(--secondary-color);
+      text-decoration: none;
+
+    }
+    </style>
+
+{% endblock %} 
+{% block content %}
+
+  <!-- Sign up form -->
+  <div class="signup-container">
+    <div class="signup-box">
+      <h2>Sign Up</h2>
+      <form action="" method="POST">
+        <div class="mb-3 text-start">
+          <label for="username" class="form-label fw-semibold">Username</label>
+          <input type="text" id="username" name="username" class="form-control" required/>
+        </div>
+        <div class="mb-3 text-start">
+          <label for="email" class="form-label fw-semibold">Email</label>
+          <input type="email" id="email" name="email" class="form-control" required/>
+        </div>
+        <div class="mb-3 text-start">
+          <label for="password" class="form-label fw-semibold">Password</label>
+          <input type="password" id="password" name="password" class="form-control" required/>
+        </div>
+
+        <button type="submit" class="btn-signup-page">Sign Up</button>
+        <div class="extra-links mt-3">
+          <p><a href="#">Forgot Password?</a></p>
+          <p>Already have an account? <a href="login">Login</a></p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+{% endblock %}

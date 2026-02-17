@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+  <style>
+      #hero {
+        height: 400px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: var(--accent-color);
+        text-align: center;
+      }
+      #hero h1 {
+        color: var(--primary-color);
+        font-weight: 700;
+      }
+      #hero p {
+        color: var(--secondary-color);
+        font-size: 1.2rem;
+        margin-top: 10px;
+      }
+
+      /* About content */
+      .about-section {
+        padding: 80px 20px;
+        background-color: var(--background-color);
+      }
+      .about-section h2 {
+        color: var(--secondary-color);
+        font-weight: 600;
+      }
+      .about-section p {
+        color: #333;
+        line-height: 1.7;
+        max-width: 800px;
+        margin: 0 auto;
+        font-size: 1.05rem;
+      }
+  </style>
+
+{% endblock %}
+
+{% block content %}
+
+  <!-- Hero -->
+  <section id="hero">
+    <div class="container">
+      <h1>About Us</h1>
+      <p>Celebrating community, creativity, and connection across Bristol.</p>
+    </div>
+  </section>
+
+  <!-- About section -->
+  <section class="about-section text-center">
+    <div class="container">
+      <h2 class="mb-4">Who We Are</h2>
+      <p>
+        Bristol Community Events (BCE) is a local initiative that brings together people, artists, and
+        organizations to promote events, creativity, and shared experiences in Bristol. From workshops
+        and exhibitions to music festivals and cultural gatherings, BCE connects the city through vibrant
+        community engagement.
+      </p>
+    </div>
+  </section>
+
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends "base.html" %} 
+{% block head %} 
+{{ super() }}
+
+    <style>
+      #hero {
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--accent-color);
+        }
+        .content-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 2rem;
+      padding: 40px 20px;
+      background-color: var(--background-color);
+    }
+
+    .event-details {
+      flex: 1 1 60%;
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .event-details h3 {
+      color: var(--secondary-color);
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+
+    .event-details p {
+      color: #333;
+      line-height: 1.7;
+    }
+
+    .event-info span {
+      display: block;
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-top: 15px;
+    }
+
+    /* Ticket Card */
+    .ticket-card {
+      flex: 1 1 35%;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      padding: 30px;
+      height: fit-content;
+    }
+
+    .ticket-card h3 {
+      color: var(--primary-color);
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+
+    .ticket-card p {
+      color: #333;
+      font-size: 1rem;
+      margin-bottom: 5px;
+    }
+
+    .ticket-card span {
+      display: block;
+      color: #555;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+
+    .price {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--secondary-color);
+      margin-top: 10px;
+    }
+
+    .book-button {
+      background-color: var(--primary-color);
+      color: white;
+      font-weight: 600;
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 15px;
+      transition: 0.3s;
+    }
+
+    .book-button:hover {
+      background-color: var(--secondary-color);
+    }
+
+    @media (max-width: 992px) {
+      .content-container {
+        flex-direction: column;
+      }
+      .event-details,
+      .ticket-card {
+        width: 100%;
+      }
+    }
+    </style>
+
+{% endblock %}
+
+{% block content %}
+
+    <div class="container-fluid p-5 text-center" id="hero">
+        <h1 style="color: var(--primary-color);">Bristol Jazz Festival 2025</h1>
+    </div>
+
+  <!-- Main Content -->
+  <div class="content-container">
+    <!-- Left: Event Details -->
+    <div class="event-details">
+      <h3>General Information</h3>
+      <p>
+        The Bristol Jazz Festival 2025 celebrates the city’s vibrant music scene, featuring performances
+        from talented local and international artists. Enjoy three days of live jazz, food stalls, and cultural
+        showcases in one of Bristol’s most iconic venues.
+      </p>
+
+      <div class="event-info">
+        <span>Date:</span>
+        <p>March 12–14, 2025</p>
+
+        <span>Venue:</span>
+        <p>Arnolfini Arts Centre, Bristol</p>
+
+        <span>Special Conditions:</span>
+        <p>Formal dress preferred. Doors open at 5:00 PM each day.</p>
+
+        <span>Description:</span>
+        <p>
+          This event includes multiple sessions throughout the weekend. Attendees can purchase single-day or
+          weekend tickets. Live performances include jazz ensembles, instrumental workshops, and late-night jam sessions.
+        </p>
+      </div>
+    </div>
+
+    <!-- Right: Ticket Information -->
+    <div class="ticket-card">
+      <h3>Ticket Information</h3>
+      <p><strong>Standard Ticket:</strong> Access for one day.</p>
+      <span>Price: £15</span>
+      <span>Sales end: March 10, 2025</span>
+
+      <hr>
+
+      <p><strong>Weekend Pass:</strong> Access to all sessions for all three days.</p>
+      <span>Price: £35</span>
+      <span>Sales end: March 10, 2025</span>
+
+      <hr>
+
+      <div class="price">From £15</div>
+      <button class="book-button">Book Now</button>
+    </div>
+  </div>
+
+{% endblock %}

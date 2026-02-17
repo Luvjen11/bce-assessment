@@ -1,0 +1,130 @@
+{% extends "base.html" %} 
+{% block head %} 
+{{ super() }}
+<style>
+  #hero {
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--accent-color);
+  }
+  .contact-container {
+    display: flex;
+    gap: 2rem;
+    padding: 2rem;
+    min-height: 480px;
+    background-color: var(--background-color);
+    margin: 40px 0;
+  }
+
+  .contact-form form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .contact-text,
+  .contact-form {
+    flex: 1;
+  }
+
+  .contact-button {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    width: 100%;
+    border: none;
+    border-radius: 6px;
+    padding: 10px;
+    transition: 0.3s;
+  }
+
+  .contact-button:hover {
+    background-color: var(--secondary-color);
+  }
+</style>
+{% endblock %} {% block content %}
+
+<div class="container-fluid p-5 text-center" id="hero">
+  <h1 style="color: var(--primary-color)">Contact Us</h1>
+</div>
+<!-- Contact Section -->
+<section class="contact-container">
+  <div class="container">
+    <div class="row align-items-stretch g-4">
+      <!-- Info -->
+      <div class="col-12 col-md-5">
+        <div class="contact-info-box h-100">
+          <h3 class="mb-3" style="color: var(--secondary-color)">
+            Get in Touch
+          </h3>
+
+          <ul class="list-unstyled mt-4">
+            <li class="mb-3">
+              <i class="bi bi-envelope text-primary me-2"></i
+              ><strong>Email:</strong> info@bcevents.com
+            </li>
+            <li class="mb-3">
+              <i class="bi bi-telephone text-primary me-2"></i
+              ><strong>Phone:</strong> +44 117 000 111
+            </li>
+            <li class="mb-3">
+              <i class="bi bi-geo-alt text-primary me-2"></i
+              ><strong>Location:</strong> Bristol, UK
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="col-12 col-md-7">
+        <div class="contact-form-box h-100">
+          <h3 class="mb-4" style="color: var(--primary-color)">
+            Send Us a Message
+          </h3>
+          <form action="#" method="post">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  required
+                  class="form-control"
+                  placeholder="Your Name"
+                />
+              </div>
+              <div class="col-md-6">
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  required
+                  class="form-control"
+                  placeholder="Your Email"
+                />
+              </div>
+              <div class="col-12">
+                <textarea
+                  id="message"
+                  name="message"
+                  required
+                  class="form-control"
+                  placeholder="Your Message"
+                  rows="5"
+                ></textarea>
+              </div>
+            </div>
+            <button type="submit" class="contact-button mt-4">
+              Send Message
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
