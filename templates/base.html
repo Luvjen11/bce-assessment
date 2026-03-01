@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     {% block head %}
@@ -51,13 +51,25 @@
           </ul>
 
           <div class="d-flex">
-            <a href="/login" class="btn btn-login me-2">Login</a>
-            <a href="/signup" class="btn btn-signup">Sign Up</a>
+            <a href="/auth/login" class="btn btn-login me-2">Login</a>
+            <a href="/auth/signup" class="btn btn-signup">Sign Up</a>
           </div>
         </div>
       </div>
     </nav>
     {% endblock %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container" role="alert" aria-live="polite">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category if category else 'info' }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
 
     <!-- main content -->
     {% block content %} {% endblock %}

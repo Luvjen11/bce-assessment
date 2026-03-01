@@ -1,5 +1,14 @@
 from flask import Flask, render_template
+from dotenv import load_dotenv
+load_dotenv()
+import os
 app = Flask(__name__)
+app.secret_key = os.getenv("FLASK_SECRET_KEY")
+
+from auth import auth
+from error import error_page
+app.register_blueprint(auth, url_prefix="/auth")
+app.register_blueprint(error_page)
 
 @app.route("/")
 @app.route("/index")
@@ -31,14 +40,6 @@ def event1():
 def event2():
     return render_template("event2.html")
 
-@app.route("/login")
-def login():
-    return render_template("login.html")
-
-@app.route("/signup")
-def signup():
-    return render_template("signup.html")
-
 @app.route("/privacy")
 def privacy():
     return render_template("privacy.html")
@@ -47,11 +48,14 @@ def privacy():
 def terms():
     return render_template("terms.html")
 
+@app.route("/profile")
+def profile():
+    return render_template("profile.html")
+
+@app.route("/admin")
+def admin():
+    return render_template("admin.html")
+
 
 if __name__ == "__main__":
     app.run(debug = True)
-
-# error
-@app.errorhandler(404)
-def not_found_error(error):
-    return render_template(), 404

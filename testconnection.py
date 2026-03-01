@@ -1,5 +1,7 @@
 import mysql.connector, dbfunc, sys
 from mysql.connector import Error
+from dotenv import load_dotenv
+load_dotenv()
  
 """ Connect to MySQL database """
 conn = dbfunc.getConnection()
