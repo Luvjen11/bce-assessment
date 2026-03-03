@@ -114,7 +114,7 @@
 {% block content %}
 
     <div class="container-fluid p-5 text-center" id="hero">
-        <h1 style="color: var(--primary-color);">Bristol Jazz Festival 2025</h1>
+        <h1 style="color: var(--primary-color);">{{event.name}}</h1>
     </div>
 
   <!-- Main Content -->
@@ -123,25 +123,22 @@
     <div class="event-details">
       <h3>General Information</h3>
       <p>
-        The Bristol Jazz Festival 2025 celebrates the city’s vibrant music scene, featuring performances
-        from talented local and international artists. Enjoy three days of live jazz, food stalls, and cultural
-        showcases in one of Bristol’s most iconic venues.
+        {{event.description}}
       </p>
 
       <div class="event-info">
         <span>Date:</span>
-        <p>March 12–14, 2025</p>
+        <p>{{event.start_date}} – {{event.end_date}}</p>
 
         <span>Venue:</span>
-        <p>Arnolfini Arts Centre, Bristol</p>
+        <p>{{event.venue_name}}, {{event.venue_address}}</p>
 
         <span>Special Conditions:</span>
         <p>Formal dress preferred. Doors open at 5:00 PM each day.</p>
 
         <span>Description:</span>
         <p>
-          This event includes multiple sessions throughout the weekend. Attendees can purchase single-day or
-          weekend tickets. Live performances include jazz ensembles, instrumental workshops, and late-night jam sessions.
+          {{event.description}}
         </p>
       </div>
     </div>
@@ -150,8 +147,8 @@
     <div class="ticket-card">
       <h3>Ticket Information</h3>
       <p><strong>Standard Ticket:</strong> Access for one day.</p>
-      <span>Price: £15</span>
-      <span>Sales end: March 10, 2025</span>
+      <span>Price: £{{event.price}}</span>
+      <span>Sales end: {{event.last_date_booking}}</span>
 
       <hr>
 
@@ -161,7 +158,7 @@
 
       <hr>
 
-      <div class="price">From £15</div>
+      <div class="price">From £{{event.price}}</div>
       <button class="book-button">Book Now</button>
     </div>
   </div>
