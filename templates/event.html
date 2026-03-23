@@ -134,7 +134,7 @@
         <p>{{event.venue_name}}, {{event.venue_address}}</p>
 
         <span>Special Conditions:</span>
-        <p>Formal dress preferred. Doors open at 5:00 PM each day.</p>
+        <p>{{event.special_conditions or "No special conditions for this event."}}</p>
 
         <span>Description:</span>
         <p>
@@ -150,16 +150,17 @@
       <span>Price: £{{event.price}}</span>
       <span>Sales end: {{event.last_date_booking}}</span>
 
-      <hr>
+      <!-- <hr> -->
 
-      <p><strong>Weekend Pass:</strong> Access to all sessions for all three days.</p>
+      <!-- <p><strong>Weekend Pass:</strong> Access to all sessions for all three days.</p>
       <span>Price: £35</span>
-      <span>Sales end: March 10, 2025</span>
+      <span>Sales end: March 10, 2025</span> -->
 
       <hr>
 
       <div class="price">From £{{event.price}}</div>
-      <button class="book-button">Book Now</button>
+      <a href="{{url_for('book_event', event_id=event.event_id)}}"  class="book-button text-decoration-none text-center d-block">Book Now</a>
+    
     </div>
   </div>
 

@@ -80,59 +80,25 @@
     <h2 class="text-center mb-5" style="color: var(--secondary-color);">All Events</h2>
 
     <div class="row g-4">
-      <!-- Card 1 -->
+      {% for event in events %}
+      <!-- Event Card -->
       <div class="col-12 col-md-6 col-lg-4">
         <div class="card event-card h-100 border-0 shadow-sm">
-          <img src="{{ url_for('static', filename='images/jazz-festival.jpg') }}" class="card-img-top" alt="Jazz Festival">
+          <img src="{{ url_for('static', filename='images/' ~ event.image_filename) }}" class="card-img-top" alt="{{ event.name }}">
           <div class="card-body">
-            <span class="category-label">Music</span>
-            <h5 class="card-title mt-2">Bristol Jazz Festival 2025</h5>
-            <p class="text-muted">A celebration of Bristol’s musical culture with performances from local artists.</p>
+            <span class="category-label">{{event.categories}}</span>
+            <h5 class="card-title mt-2">{{event.name}}</h5>
+            <p class="text-muted">{{ event.description }}</p>
             <ul class="list-unstyled small text-secondary">
-              <li><strong>Date:</strong> March 12–14, 2025</li>
-              <li><strong>Venue:</strong> Arnolfini Arts Centre</li>
-              <li><strong>Tickets:</strong> £25 / Free for students</li>
+              <li><strong>Date:</strong> {{ event.start_date }} – {{ event.end_date }}</li>
+              <li><strong>Venue:</strong> {{ event.venue_name }}</li>
+              <li><strong>Tickets:</strong> £{{ event.price }}</li>
             </ul>
-            <a href="event" class="btn btn-primary mt-2">View Details</a>
+            <a href="{{ url_for('event_with_venue', event_id=event.event_id) }}" class="btn btn-primary mt-2">View Details</a>
           </div>
         </div>
       </div>
-
-      <!-- Card 2 -->
-      <div class="col-12 col-md-6 col-lg-4">
-        <div class="card event-card h-100 border-0 shadow-sm">
-          <img src="{{ url_for('static', filename='images/art-workshop.jpg') }}" class="card-img-top" alt="Art Workshop">
-          <div class="card-body">
-            <span class="category-label">Workshop</span>
-            <h5 class="card-title mt-2">Creative Art Workshop</h5>
-            <p class="text-muted">Join a weekend of painting, crafting, and inspiration with local artists.</p>
-            <ul class="list-unstyled small text-secondary">
-              <li><strong>Date:</strong> March 22, 2025</li>
-              <li><strong>Venue:</strong> Creative Space B</li>
-              <li><strong>Tickets:</strong> £30</li>
-            </ul>
-            <a href="event1" class="btn btn-primary mt-2">View Details</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Card 3 -->
-      <div class="col-12 col-md-6 col-lg-4">
-        <div class="card event-card h-100 border-0 shadow-sm">
-          <img src="{{ url_for('static', filename='images/art-exhibition.jpg') }}" class="card-img-top" alt="Art Exhibition">
-          <div class="card-body">
-            <span class="category-label">Exhibition</span>
-            <h5 class="card-title mt-2">Community Art Exhibition</h5>
-            <p class="text-muted">Explore artwork from local schools and artists, celebrating creativity in Bristol.</p>
-            <ul class="list-unstyled small text-secondary">
-              <li><strong>Date:</strong> April 5–10, 2025</li>
-              <li><strong>Venue:</strong> UWE Exhibition Centre</li>
-              <li><strong>Tickets:</strong> Free Entry</li>
-            </ul>
-            <a href="event2" class="btn btn-primary mt-2">View Details</a>
-          </div>
-        </div>
-      </div>
+      {% endfor %}
     </div>
   </section>
 

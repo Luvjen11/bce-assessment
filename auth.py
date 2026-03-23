@@ -1,8 +1,13 @@
-from flask import Blueprint, render_template, request, redirect, flash, url_for, session
+from flask import Blueprint, render_template, request, redirect, flash, url_for, session, wrappers
 from dbfunc import getConnection
 from werkzeug.security import generate_password_hash, check_password_hash
 
 auth = Blueprint("auth",__name__)
+
+# wrapper to secure endpoint
+# def login_required(f):
+#     @wraps(f)
+#     def wrap():
 
 #sign up endpoint
 @auth.route("/signup", methods = ["POST", "GET"])
@@ -48,6 +53,8 @@ def signup():
 @auth.route("/login", methods = ["POST", "GET"])
 def login():
     if request.method == "POST":
+        # store session
+        session["username"] = request.form.get("username").strip().lower()
         username = request.form.get("username").strip().lower()
         password = request.form.get("password", "")
 
@@ -89,6 +96,7 @@ def login():
 
 #logout endpoint
 @auth.route("/logout")
+# @login_required
 def logout():
     session.clear()
     flash("User successfully logged out")

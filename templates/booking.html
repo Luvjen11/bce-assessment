@@ -1,0 +1,394 @@
+{% extends "base.html" %} 
+{% block head %} 
+{{ super() }}
+<style>
+  #hero {
+    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--accent-color);
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+
+  #hero h1 {
+    color: var(--primary-color);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  #hero p {
+    color: #555;
+    max-width: 650px;
+    margin: 0 auto;
+  }
+
+  .booking-section {
+    background-color: var(--background-color);
+    padding: 3rem 0;
+  }
+
+  .booking-wrapper {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2rem;
+  }
+
+  .booking-card,
+  .summary-card {
+    background-color: #fff;
+    border-radius: 14px;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.06);
+    padding: 2rem;
+  }
+
+  .section-heading {
+    color: var(--secondary-color);
+    font-weight: 700;
+    margin-bottom: 1.2rem;
+  }
+
+  .event-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .meta-box {
+    background-color: #fff7ef;
+    border: 1px solid #f1dcc7;
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+  }
+
+  .meta-box small {
+    display: block;
+    color: #777;
+    margin-bottom: 0.25rem;
+  }
+
+  .meta-box strong {
+    color: #333;
+    font-weight: 600;
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .form-control,
+  .form-select {
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    padding: 0.75rem 0.9rem;
+  }
+
+  .form-control:focus,
+  .form-select:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 0.15rem rgba(214, 125, 62, 0.15);
+  }
+
+  .special-note {
+    background-color: #fff7ef;
+    border-left: 4px solid var(--secondary-color);
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #444;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-check {
+    margin-bottom: 0.8rem;
+  }
+
+  .form-check-label {
+    color: #444;
+    font-size: 0.95rem;
+  }
+
+  .summary-card h3 {
+    color: var(--primary-color);
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .summary-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.85rem;
+    font-size: 0.96rem;
+    color: #444;
+  }
+
+  .summary-line.total {
+    border-top: 1px solid #e6e6e6;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    font-size: 1.08rem;
+    font-weight: 700;
+    color: #222;
+  }
+
+  .discount-note {
+    font-size: 0.9rem;
+    color: #666;
+    background-color: #faf7f2;
+    border-radius: 8px;
+    padding: 0.9rem;
+    margin-top: 1rem;
+  }
+
+  .book-btn {
+    width: 100%;
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 0.95rem 1rem;
+    font-weight: 700;
+    transition: 0.3s ease;
+    margin-top: 1.5rem;
+  }
+
+  .book-btn:hover {
+    background-color: var(--secondary-color);
+  }
+
+  .secondary-link {
+    display: inline-block;
+    margin-top: 1rem;
+    text-decoration: none;
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+
+  .secondary-link:hover {
+    text-decoration: underline;
+  }
+
+  .availability-badge {
+    display: inline-block;
+    background-color: #fff7ef;
+    color: var(--primary-color);
+    font-weight: 600;
+    padding: 0.45rem 0.8rem;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .checkbox-group {
+    margin-top: 1.2rem;
+  }
+
+  .muted-text {
+    color: #666;
+    font-size: 0.93rem;
+  }
+
+  @media (max-width: 992px) {
+    .booking-wrapper {
+      grid-template-columns: 1fr;
+    }
+
+    .event-meta {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+{% endblock %} 
+
+{% block content %}
+
+<!-- Hero -->
+<section id="hero">
+  <div class="container">
+    <h1>Book Your Event</h1>
+    <p>
+      Review the event details, choose your ticket quantity, and confirm your
+      booking below.
+    </p>
+  </div>
+</section>
+
+<!-- Booking Section -->
+<section class="booking-section">
+  <div class="container">
+    <div class="booking-wrapper">
+      <!-- Left: Form + Event Info -->
+      <div class="booking-card">
+        <span class="availability-badge">{{ remaining_tickets }} tickets remaining</span>
+
+        <h2 class="section-heading">{{event.name}}</h2>
+
+        <div class="event-meta">
+          <div class="meta-box">
+            <small>Date</small>
+            <strong>{{event.start_date}}</strong>
+          </div>
+          <div class="meta-box">
+            <small>Venue</small>
+            <strong>{{event.venue_name}}</strong>
+          </div>
+          <div class="meta-box">
+            <small>Price</small>
+            <strong>£{{event.price}}</strong>
+          </div>
+          <div class="meta-box">
+            <small>Booking Deadline</small>
+            <strong>{{event.last_date_booking}}</strong>
+          </div>
+        </div>
+
+        <div class="special-note">
+          <strong>Special conditions:</strong> {{event.special_conditions or "No special conditions for this event."}}<br />
+          {{event.description}}
+        </div>
+
+        <form method="POST">
+          <!-- hidden event id later with Flask -->
+          <input type="hidden" name="event_id" value="{{event.event_id}}" />
+
+          <div class="mb-3">
+            <label for="quantity" class="form-label">Number of tickets</label>
+            <input
+              type="number"
+              class="form-control"
+              id="quantity"
+              name="quantity"
+              min="1"
+              max="{{remaining_tickets}}"
+              placeholder="Enter quantity"
+              required
+            />
+          </div>
+
+          <!-- Multi-day support placeholder -->
+          <div class="mb-3">
+            <label for="event_day" class="form-label">Select event day</label>
+            <select class="form-select" id="event_day" name="event_day">
+              <option selected value="{{event.start_date}}">{{event.start_date}}</option>
+            </select>
+            <div class="muted-text mt-2">
+              For multi-day events, users will be able to select one or more
+              available event days.
+            </div>
+          </div>
+
+          <div class="checkbox-group">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                value="1"
+                id="student_discount"
+                name="student_discount"
+              />
+              <label class="form-check-label" for="student_discount">
+                I confirm I am eligible for the 10% student discount.
+              </label>
+            </div>
+
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                value="1"
+                id="advance_discount_info"
+                checked
+                disabled
+              />
+              <label class="form-check-label" for="advance_discount_info">
+                Advance booking discounts will be applied automatically where
+                eligible.
+              </label>
+            </div>
+
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                value="1"
+                id="terms"
+                name="terms"
+                required
+              />
+              <label class="form-check-label" for="terms">
+                I agree to the <a href="/terms">Terms & Conditions</a> and
+                understand the cancellation policy.
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" class="book-btn">Confirm Booking</button>
+        </form>
+
+        <a href="{{ url_for('event_with_venue', event_id=event.event_id) }}" class="secondary-link">← Back to event details</a>
+      </div>
+
+      <!-- Right: Summary -->
+      <div class="summary-card">
+        <h3>Booking Summary</h3>
+
+        <div class="summary-line">
+          <span>Event</span>
+          <span>{{event.name}}</span>
+        </div>
+
+        <div class="summary-line">
+          <span>Price per ticket</span>
+          <span>£{{event.price}}</span>
+        </div>
+
+        <div class="summary-line">
+          <span>Selected quantity</span>
+          <span>—</span>
+        </div>
+
+        <div class="summary-line">
+          <span>Subtotal</span>
+          <span>£0.00</span>
+        </div>
+
+        <div class="summary-line">
+          <span>Student discount</span>
+          <span>Applied at checkout</span>
+        </div>
+
+        <div class="summary-line">
+          <span>Advance booking discount</span>
+          <span>Applied automatically</span>
+        </div>
+
+        <div class="summary-line total">
+          <span>Estimated Total</span>
+          <span>£0.00</span>
+        </div>
+
+        <!-- <div class="discount-note">
+          <strong>Discount policy:</strong><br />
+          Student bookings receive a flat 10% discount.<br />
+          Advance booking discounts from 5% to 20% are automatically applied
+          depending on how early the booking is made.
+        </div>
+
+        <div class="discount-note">
+          <strong>Cancellation policy:</strong><br />
+          40+ days before: no charge<br />
+          25–39 days before: 40% charge<br />
+          Within 25 days: 100% charge
+        </div> -->
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
