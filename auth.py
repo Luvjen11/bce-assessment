@@ -1,13 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, flash, url_for, session, wrappers
 from dbfunc import getConnection
 from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps 
 
 auth = Blueprint("auth",__name__)
-
-# wrapper to secure endpoint
-# def login_required(f):
-#     @wraps(f)
-#     def wrap():
 
 #sign up endpoint
 @auth.route("/signup", methods = ["POST", "GET"])
@@ -52,25 +48,29 @@ def signup():
 #login endpoint
 @auth.route("/login", methods = ["POST", "GET"])
 def login():
+
     if request.method == "POST":
-        # store session
-        session["username"] = request.form.get("username").strip().lower()
         username = request.form.get("username").strip().lower()
         password = request.form.get("password", "")
+            
 
         if not username or not password:
             flash("Username or Password missing")
             return render_template("login.html")
+                
 
         conn = getConnection()
         if conn is None or not conn.is_connected():
             return "DB Connection Error", 500
-        
+                
         cursor = None
-        try: 
+        try:
             cursor = conn.cursor()
-            cursor.execute("SELECT user_id, username, password_hash FROM users WHERE username = %s",
-                        (username,))
+            cursor.execute("""
+                SELECT user_id, username, password_hash
+                FROM users 
+                WHERE username = %s
+            """, (username,))
             user = cursor.fetchone()
 
             if not user or not check_password_hash(user[2], password):
@@ -81,18 +81,19 @@ def login():
             session["user_id"] = user[0]
             session["username"] = user[1]
 
-            # TODO: search for how to redirect user to the page they were in
+            flash("Login Successful")
             return redirect(url_for("profile"))
 
         except Exception:
-            return "Login failed"
+                return "Login failed", 500
+
         finally:
             if cursor:
                 cursor.close()
             conn.close()
-        
-    
+   
     return render_template("login.html")
+
 
 #logout endpoint
 @auth.route("/logout")
@@ -101,4 +102,17 @@ def logout():
     session.clear()
     flash("User successfully logged out")
     return redirect(url_for("auth.login"))
+
+# wrapper to secure endpoint
+def login_required(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if 'user_id' in session:
+            return f(*args, **kwargs)
+        else:            
+            flash("Please log in to access page.")
+            return redirect(url_for("auth.login"))   
+    return wrap
+
+
 

@@ -1,5 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
+<section class="container py-5">
+    <div>
+        <h1 class="mb-3" style="color: var(--primary-color)">Welcome, {{session.username}} </h1>
+        <p></p>
+        <div class="d-flex gap-3 flex-wrap">
+            <a href="{{url_for('events')}}" class="btn btn-primary">View Events</a>
+            <a href="{{url_for('auth.logout')}}" class="btn btn-secondary">Logout</a>
+        </div>
+    </div>
+</section>
 
 {% endblock %}

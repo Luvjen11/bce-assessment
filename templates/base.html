@@ -51,8 +51,13 @@
           </ul>
 
           <div class="d-flex">
-            <a href="/auth/login" class="btn btn-login me-2">Login</a>
-            <a href="/auth/signup" class="btn btn-signup">Sign Up</a>
+            {% if session.get("user_id") %}
+              <a href="{{ url_for('profile') }}" class="btn btn-profile me-2">{{session.get("username")}}</a>
+              <a href="{{ url_for('auth.logout') }}" class="btn btn-logout">Logout</a>
+            {% else %}
+              <a href="/auth/login" class="btn btn-login me-2">Login</a>
+              <a href="/auth/signup" class="btn btn-signup">Sign Up</a>
+            {% endif %}
           </div>
         </div>
       </div>

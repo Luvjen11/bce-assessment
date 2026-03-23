@@ -7,7 +7,7 @@ import os
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
-from auth import auth
+from auth import auth, login_required
 from error import error_page
 app.register_blueprint(auth, url_prefix="/auth")
 app.register_blueprint(error_page)
@@ -333,6 +333,7 @@ def terms():
     return render_template("terms.html")
 
 @app.route("/profile")
+@login_required
 def profile():
     return render_template("profile.html")
 
