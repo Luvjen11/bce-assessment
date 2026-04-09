@@ -1,32 +1,105 @@
 {% extends "base.html" %}
+{% block head %}
+{{ super() }}
+<style>
+  .receipt-section {
+    background-color: var(--background-color);
+    padding: 3rem 0;
+  }
+
+
+  .receipt-title {
+    color: var(--primary-color);
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .receipt-meta p {
+    margin-bottom: 0.55rem;
+    color: #444;
+  }
+
+  .receipt-total {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-top: 1.25rem;
+  }
+
+  @media print {
+    nav,
+    footer,
+    .no-print {
+      display: none !important;
+    }
+
+    body {
+      background: white !important;
+    }
+
+    .receipt-section {
+      padding: 0;
+      background: white !important;
+    }
+
+    .receipt-card {
+      box-shadow: none;
+      border: none;
+      padding: 0;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<section class="container py-5">
-  <h1 class="mb-4">Booking Receipt #{{ booking.booking_id }}</h1>
-  <p><strong>Event:</strong> {{ booking.event_name }}</p>
-  <p><strong>Venue:</strong> {{ booking.venue_name }}</p>
-  <p><strong>Date:</strong> {{ booking.start_date }} - {{ booking.end_date }}</p>
-  <p><strong>Booked on:</strong> {{ booking.booking_date }}</p>
-  <p><strong>Status:</strong> {{ booking.status }}</p>
+<section class="receipt-section">
+  <div class="container">
+    <div>
+      <h1 class="receipt-title">Booking Receipt #{{ booking.booking_id }}</h1>
 
-  <table class="table mt-4">
-    <thead>
-      <tr>
-        <th>Event Day</th>
-        <th>Quantity</th>
-        <th>Unit Price</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in items %}
-      <tr>
-        <td>{{ item.event_day }}</td>
-        <td>{{ item.quantity }}</td>
-        <td>£{{ item.unit_price }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      <div class="receipt-meta">
+        <p><strong>Event:</strong> {{ booking.event_name }}</p>
+        <p><strong>Venue:</strong> {{ booking.venue_name }}</p>
+        <p><strong>Date:</strong> {{ booking.start_date }} - {{ booking.end_date }}</p>
+        <p><strong>Booked on:</strong> {{ booking.booking_date }}</p>
+        <p>
+          <strong>Status:</strong>
+          <span class="badge text-bg-secondary">{{ booking.status|capitalize }}</span>
+        </p>
+      </div>
 
-  <h4 class="mt-3">Total: £{{ booking.total_price }}</h4>
+      <table class="table mt-4">
+        <thead>
+          <tr>
+            <th>Event Day</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if items %}
+            {% for item in items %}
+            <tr>
+              <td>{{ item.event_day }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>£{{ item.unit_price }}</td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="3" class="text-muted">No line items found.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+
+      <div class="receipt-total">Total: £{{ booking.total_price }}</div>
+
+      <div class="mt-4 d-flex gap-3 flex-wrap no-print">
+        <button onclick="window.print()" class="btn btn-primary">Download as PDF</button>
+        <a href="{{ url_for('profile') }}" class="btn btn-outline-secondary">Back to Profile</a>
+      </div>
+    </div>
+  </div>
 </section>
 {% endblock %}
