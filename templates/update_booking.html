@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="container py-5">
+  <div class="card shadow-sm border-0 p-4">
+    <h1 class="mb-3" style="color: var(--primary-color);">Update Booking</h1>
+    <p class="text-muted mb-4">
+      Update your ticket quantity for <strong>{{ booking.event_name }}</strong>.
+    </p>
+
+    <div class="mb-4">
+      <p><strong>Venue:</strong> {{ booking.venue_name }}</p>
+      <p><strong>Event Date:</strong> {{ booking.start_date }}</p>
+      <p><strong>Current Quantity:</strong> {{ booking.quantity }}</p>
+      <p><strong>Current Total:</strong> £{{ booking.total_price }}</p>
+    </div>
+
+    <form method="POST">
+      <div class="mb-3">
+        <label for="quantity" class="form-label">New Quantity</label>
+        <input
+          type="number"
+          class="form-control"
+          id="quantity"
+          name="quantity"
+          min="1"
+          value="{{ booking.quantity }}"
+          required
+        >
+      </div>
+
+      <div class="mb-3">
+        <label for="event_day" class="form-label">Event Day</label>
+        <input
+          type="text"
+          class="form-control"
+          id="event_day"
+          name="event_day"
+          value="{{ booking.event_day }}"
+          readonly
+        >
+      </div>
+
+      <div class="d-flex gap-3 flex-wrap">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="{{ url_for('profile') }}" class="btn btn-outline-secondary">Back to Profile</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

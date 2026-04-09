@@ -8,8 +8,10 @@ app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
 from auth import auth, login_required
+from admin import admin
 from error import error_page
 app.register_blueprint(auth, url_prefix="/auth")
+app.register_blueprint(admin, url_prefix="/admin")
 app.register_blueprint(error_page)
 
 # functions 
@@ -128,6 +130,20 @@ def get_tickets_booked_for_event(event_id):
         if cursor:
             cursor.close()
         conn.close()
+
+# cancellation fee logic
+def calculate_cancellation_fee(total_price, start_date):
+    days_before = (start_date.date() - datetime.now().date()).days
+
+    if days_before >= 40:
+        fee = 0
+    elif 25 <= days_before <= 39:
+        fee = total_price * 0.40
+    else:
+        fee = total_price
+
+    refund = total_price - fee
+    return round(fee, 2), round(refund, 2)
 
 
         
@@ -400,6 +416,8 @@ def profile():
 @login_required
 def update_booking(booking_id):
 
+    user_id = session.get("user_id")
+
     conn = getConnection()
     if conn is None or not conn.is_connected():
         return "DB Connection Error", 500
@@ -408,15 +426,7 @@ def update_booking(booking_id):
     try:
         cursor = conn.cursor(dictionary=True)
 
-        # user info
-        cursor.execute("""
-            SELECT b.booking_id, b.user_id, first_name, last_name, username, email
-            FROM users
-            WHERE user_id = %s
-        """, (user_id,))
-        user = cursor.fetchone()
-
-        # bookings
+        # get booking
         cursor.execute("""
             SELECT
                 b.booking_id,
@@ -427,32 +437,91 @@ def update_booking(booking_id):
                 e.name AS event_name,
                 e.start_date,
                 e.end_date,
-                v.name AS venue_name
+                e.price,
+                e.last_date_booking,
+                e.is_free,
+                v.name AS venue_name,
+                v.capacity,
+                bi.booking_item_id,
+                bi.quantity,
+                bi.event_day,
+                bi.unit_price
             FROM bookings b
             JOIN events e ON b.event_id = e.event_id
             JOIN venues v ON e.venue_id = v.venue_id
-            WHERE b.user_id = %s
-            ORDER BY e.start_date ASC
-        """, (user_id,))
-        bookings = cursor.fetchall()
+            JOIN booking_items bi ON b.booking_id = bi.booking_id
+            WHERE b.booking_id = %s AND b.user_id = %s
+        """, (booking_id, user_id,))
 
-        today = datetime.now()
+        booking = cursor.fetchone()
 
-        upcoming_bookings = [b for b in bookings if b["start_date"] >= today and b["status"] == "confirmed"]
-        past_bookings = [b for b in bookings if b["start_date"] < today and b["status"] == "confirmed"]
-        cancelled_bookings = [b for b in bookings if b["status"] == "cancelled"]
+        if not booking:
+            return render_template("404.html"), 404
+        
+        if booking["status"] == "cancelled":
+            flash("Cancelled bookings cannot be updated.")
+            return redirect(url_for("profile"))
+        
+        if booking["start_date"] < datetime.now():
+            flash("Past bookings cannot be updated.")
+            return redirect(url_for("profile"))
 
-        return render_template(
-            "profile.html",
-            user=user,
-            upcoming_bookings=upcoming_bookings,
-            past_bookings=past_bookings,
-            cancelled_bookings=cancelled_bookings
-        )
+        if request.method == "GET":
+            return render_template("update_booking.html", booking=booking)
+        
+        quantity_raw = request.form.get("quantity")
+
+        # validate quantity
+        try: 
+            quantity = int(quantity_raw)
+            if quantity < 1:
+                    raise ValueError
+        except (TypeError, ValueError):
+            flash("Please enter a valid ticket quantity.")
+            return redirect(request.url)
+        
+        # capacity check excluding current booking
+        cursor.execute("""
+            SELECT COALESCE(SUM(bi.quantity), 0) AS tickets_booked
+            FROM bookings b
+            JOIN booking_items bi ON b.booking_id = bi.booking_id
+            WHERE b.event_id = %s
+            AND b.status = 'confirmed'
+            AND b.booking_id != %s
+        """, (booking["event_id"], booking_id))
+        booked = cursor.fetchone()["tickets_booked"] or 0
+
+        remaining_tickets = booking["capacity"] - booked
+
+        if quantity > remaining_tickets:
+            flash(f"Only {remaining_tickets} tickets are available for this event.")
+            return redirect(request.url)
+
+        unit_price = 0 if booking["is_free"] else float(booking["price"])
+        # updated price and round to 2 decimal
+        new_total = round(unit_price * quantity, 2)
+
+        # update reciept
+        cursor.execute("""
+            UPDATE booking_items
+            SET quantity = %s
+            WHERE booking_item_id = %s
+        """, (quantity, booking["booking_item_id"]))
+
+        # update actual booking
+        cursor.execute("""
+            UPDATE bookings
+            SET total_price = %s
+            WHERE booking_id = %s
+        """, (new_total, booking_id))
+
+        conn.commit()
+        flash("Booking updated successfully.")
+        return redirect(url_for("profile"))
 
     except Exception as e:
-        print("PROFILE ERROR:", e)
-        return "Failed to load profile", 500
+        print("UPDATE BOOKING ERROR:", e)
+        return "Failed to update booking", 500
 
     finally:
         if cursor:
@@ -462,6 +531,65 @@ def update_booking(booking_id):
 @app.route("/booking/<int:booking_id>/cancel", methods=["GET", "POST"])
 @login_required
 def cancel_booking(booking_id):
+    user_id = session.get("user_id")
+
+    conn = getConnection()
+    if conn is None or not conn.is_connected():
+        return "DB Connection Error", 500
+
+    cursor = None
+    try:
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT
+                b.booking_id,
+                b.user_id,
+                b.status,
+                b.total_price,
+                e.start_date,
+                e.name AS event_name
+            FROM bookings b
+            JOIN events e ON b.event_id = e.event_id
+            WHERE b.booking_id = %s AND b.user_id = %s
+        """, (booking_id, user_id))
+        booking = cursor.fetchone()
+
+        if not booking:
+            return render_template("404.html"), 404
+
+        if booking["status"] == "cancelled":
+            flash("Booking has already been cancelled.")
+            return redirect(url_for("profile"))
+
+        fee, refund = calculate_cancellation_fee(
+            float(booking["total_price"]),
+            booking["start_date"]
+        )
+
+        cursor.execute("""
+            UPDATE bookings
+            SET status = %s,
+                cancellation_fee = %s,
+                refund_amount = %s
+            WHERE booking_id = %s
+        """, ("cancelled", fee, refund, booking_id))
+
+        conn.commit()
+
+        flash(
+            f"Booking cancelled successfully. Cancellation fee: £{fee:.2f}. Refund: £{refund:.2f}."
+        )
+        return redirect(url_for("profile"))
+
+    except Exception as e:
+        print("CANCEL BOOKING ERROR:", e)
+        return "Failed to load profile", 500
+
+    finally:
+        if cursor:
+            cursor.close()
+        conn.close()
     return 
 
 @app.route("/admin")
