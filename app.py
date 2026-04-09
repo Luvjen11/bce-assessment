@@ -335,7 +335,134 @@ def terms():
 @app.route("/profile")
 @login_required
 def profile():
-    return render_template("profile.html")
+    user_id = session.get("user_id")
+
+    conn = getConnection()
+    if conn is None or not conn.is_connected():
+        return "DB Connection Error", 500
+
+    cursor = None
+    try:
+        cursor = conn.cursor(dictionary=True)
+
+        # user info
+        cursor.execute("""
+            SELECT user_id, first_name, last_name, username, email
+            FROM users
+            WHERE user_id = %s
+        """, (user_id,))
+        user = cursor.fetchone()
+
+        # bookings
+        cursor.execute("""
+            SELECT
+                b.booking_id,
+                b.booking_date,
+                b.status,
+                b.total_price,
+                e.event_id,
+                e.name AS event_name,
+                e.start_date,
+                e.end_date,
+                v.name AS venue_name
+            FROM bookings b
+            JOIN events e ON b.event_id = e.event_id
+            JOIN venues v ON e.venue_id = v.venue_id
+            WHERE b.user_id = %s
+            ORDER BY e.start_date ASC
+        """, (user_id,))
+        bookings = cursor.fetchall()
+
+        today = datetime.now()
+
+        upcoming_bookings = [b for b in bookings if b["start_date"] >= today and b["status"] == "confirmed"]
+        past_bookings = [b for b in bookings if b["start_date"] < today and b["status"] == "confirmed"]
+        cancelled_bookings = [b for b in bookings if b["status"] == "cancelled"]
+
+        return render_template(
+            "profile.html",
+            user=user,
+            upcoming_bookings=upcoming_bookings,
+            past_bookings=past_bookings,
+            cancelled_bookings=cancelled_bookings
+        )
+
+    except Exception as e:
+        print("PROFILE ERROR:", e)
+        return "Failed to load profile", 500
+
+    finally:
+        if cursor:
+            cursor.close()
+        conn.close()
+
+@app.route("/booking/<int:booking_id>/update", methods=["GET", "POST"])
+@login_required
+def update_booking(booking_id):
+
+    conn = getConnection()
+    if conn is None or not conn.is_connected():
+        return "DB Connection Error", 500
+
+    cursor = None
+    try:
+        cursor = conn.cursor(dictionary=True)
+
+        # user info
+        cursor.execute("""
+            SELECT b.booking_id, b.user_id, first_name, last_name, username, email
+            FROM users
+            WHERE user_id = %s
+        """, (user_id,))
+        user = cursor.fetchone()
+
+        # bookings
+        cursor.execute("""
+            SELECT
+                b.booking_id,
+                b.booking_date,
+                b.status,
+                b.total_price,
+                e.event_id,
+                e.name AS event_name,
+                e.start_date,
+                e.end_date,
+                v.name AS venue_name
+            FROM bookings b
+            JOIN events e ON b.event_id = e.event_id
+            JOIN venues v ON e.venue_id = v.venue_id
+            WHERE b.user_id = %s
+            ORDER BY e.start_date ASC
+        """, (user_id,))
+        bookings = cursor.fetchall()
+
+        today = datetime.now()
+
+        upcoming_bookings = [b for b in bookings if b["start_date"] >= today and b["status"] == "confirmed"]
+        past_bookings = [b for b in bookings if b["start_date"] < today and b["status"] == "confirmed"]
+        cancelled_bookings = [b for b in bookings if b["status"] == "cancelled"]
+
+        return render_template(
+            "profile.html",
+            user=user,
+            upcoming_bookings=upcoming_bookings,
+            past_bookings=past_bookings,
+            cancelled_bookings=cancelled_bookings
+        )
+
+    except Exception as e:
+        print("PROFILE ERROR:", e)
+        return "Failed to load profile", 500
+
+    finally:
+        if cursor:
+            cursor.close()
+        conn.close()
+
+@app.route("/booking/<int:booking_id>/cancel", methods=["GET", "POST"])
+@login_required
+def cancel_booking(booking_id):
+    return 
 
 @app.route("/admin")
 def admin():

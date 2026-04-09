@@ -1,15 +1,226 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% block head %} {{ super() }}
+<style>
+  .profile-section {
+    background-color: var(--background-color);
+    padding: 3rem 0;
+  }
 
-{% block content %}
-<section class="container py-5">
-    <div>
-        <h1 class="mb-3" style="color: var(--primary-color)">Welcome, {{session.username}} </h1>
-        <p></p>
-        <div class="d-flex gap-3 flex-wrap">
-            <a href="{{url_for('events')}}" class="btn btn-primary">View Events</a>
-            <a href="{{url_for('auth.logout')}}" class="btn btn-secondary">Logout</a>
-        </div>
+  .profile-header,
+  .profile-card {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin-bottom: 2rem;
+  }
+
+  .profile-title {
+    color: var(--primary-color);
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  .profile-subtitle {
+    color: #666;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-title {
+    color: var(--secondary-color);
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .booking-item {
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin-bottom: 1rem;
+    background: transparent;
+  }
+
+  .booking-item h5 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+
+  .booking-meta {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 0.7rem;
+  }
+
+  .booking-meta strong {
+    color: #333;
+  }
+
+  .booking-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 0.8rem;
+  }
+
+  .empty-state {
+    color: #777;
+    font-size: 0.95rem;
+    margin-bottom: 0;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background-color: #fff7ef;
+    color: var(--primary-color);
+    margin-bottom: 0.6rem;
+  }
+
+  .btn-soft {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+  }
+
+  .btn-soft:hover {
+    background-color: var(--secondary-color);
+    color: white;
+  }
+
+  .btn-outline-soft {
+    border: 1px solid var(--secondary-color);
+    color: var(--secondary-color);
+    background-color: transparent;
+  }
+
+  .btn-outline-soft:hover {
+    background-color: var(--secondary-color);
+    color: white;
+  }
+</style>
+{% endblock %} {% block content %}
+<section class="profile-section">
+  <div class="container">
+    <div class="profile-header">
+      <h1 class="profile-title">Welcome, {{ user.username }}</h1>
+      <p class="profile-subtitle">
+        Manage your bookings, account details, and receipts from one place.
+      </p>
+    <div class="profile-details">
+        <p><strong>First name:</strong> {{ user.first_name }}</p>
+        <p><strong>Last name:</strong> {{ user.last_name }}</p>
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
     </div>
-</section>
 
+      <div class="d-flex gap-3 flex-wrap">
+        <a href="{{ url_for('events') }}" class="btn btn-soft">Browse Events</a>
+        <a href="{{ url_for('auth.update_password') }}" class="btn btn-outline-soft">Update Password</a>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger"
+          >Logout</a
+        >
+      </div>
+    </div>
+
+    <!-- Upcoming Bookings -->
+    <div class="profile-card">
+      <h2 class="section-title">Upcoming Bookings</h2>
+
+      {% if upcoming_bookings %} {% for booking in upcoming_bookings %}
+      <div class="booking-item">
+        <span class="status-badge">{{ booking.status|capitalize }}</span>
+        <h5>{{ booking.event_name }}</h5>
+
+        <div class="booking-meta">
+          <div><strong>Date:</strong> {{ booking.start_date }}</div>
+          <div><strong>Venue:</strong> {{ booking.venue_name }}</div>
+          <div><strong>Total:</strong> £{{ booking.total_price }}</div>
+        </div>
+
+        <div class="booking-actions">
+          <a
+            href="{{ url_for('booking_receipt', booking_id=booking.booking_id) }}"
+            class="btn btn-sm btn-soft"
+            >View Receipt</a
+          >
+          <a
+            href="{{ url_for('update_booking', booking_id=booking.booking_id) }}"
+            class="btn btn-sm btn-outline-soft"
+            >Update</a
+          >
+          <form
+            method="POST"
+            action="{{ url_for('cancel_booking', booking_id=booking.booking_id) }}"
+          >
+            <button type="submit" class="btn btn-sm btn-outline-danger">
+              Cancel
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %} {% else %}
+      <p class="empty-state">No upcoming bookings yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- Past Bookings -->
+    <div class="profile-card">
+      <h2 class="section-title">Past Bookings</h2>
+
+      {% if past_bookings %} {% for booking in past_bookings %}
+      <div class="booking-item">
+        <span class="status-badge">{{ booking.status|capitalize }}</span>
+        <h5>{{ booking.event_name }}</h5>
+
+        <div class="booking-meta">
+          <div><strong>Date:</strong> {{ booking.start_date }}</div>
+          <div><strong>Venue:</strong> {{ booking.venue_name }}</div>
+          <div><strong>Total:</strong> £{{ booking.total_price }}</div>
+        </div>
+
+        <div class="booking-actions">
+          <a
+            href="{{ url_for('booking_receipt', booking_id=booking.booking_id) }}"
+            class="btn btn-sm btn-soft"
+            >View Receipt</a
+          >
+        </div>
+      </div>
+      {% endfor %} {% else %}
+      <p class="empty-state">No past bookings yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- Cancelled Bookings -->
+    <div class="profile-card">
+      <h2 class="section-title">Cancelled Bookings</h2>
+
+      {% if cancelled_bookings %} {% for booking in cancelled_bookings %}
+      <div class="booking-item">
+        <span class="status-badge">Cancelled</span>
+        <h5>{{ booking.event_name }}</h5>
+
+        <div class="booking-meta">
+          <div><strong>Date:</strong> {{ booking.start_date }}</div>
+          <div><strong>Venue:</strong> {{ booking.venue_name }}</div>
+          <div><strong>Total:</strong> £{{ booking.total_price }}</div>
+        </div>
+
+        <div class="booking-actions">
+          <a
+            href="{{ url_for('booking_receipt', booking_id=booking.booking_id) }}"
+            class="btn btn-sm btn-outline-soft"
+            >View Receipt</a
+          >
+        </div>
+      </div>
+      {% endfor %} {% else %}
+      <p class="empty-state">No cancelled bookings.</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
 {% endblock %}

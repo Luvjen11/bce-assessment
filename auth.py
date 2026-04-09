@@ -103,6 +103,7 @@ def logout():
     flash("User successfully logged out")
     return redirect(url_for("auth.login"))
 
+
 # wrapper to secure endpoint
 def login_required(f):
     @wraps(f)
@@ -114,5 +115,64 @@ def login_required(f):
             return redirect(url_for("auth.login"))   
     return wrap
 
+
+@auth.route("/profile/password", methods=["GET", "POST"])
+@login_required
+def update_password():
+    user_id = session.get("user_id")
+    
+    if request.method == "POST":
+        current_password = request.form.get("current_password", "")
+        new_password = request.form.get("new_password", "")
+        confirm_password = request.form.get("confirm_password", "")
+            
+
+        if not current_password or not new_password or not confirm_password:
+            flash("All password fields required.")
+            return redirect(request.url)
+                
+        if new_password != confirm_password:
+            flash("New passwords do not match.")
+            return redirect(request.url)
+
+        conn = getConnection()
+        if conn is None or not conn.is_connected():
+            return "DB Connection Error", 500
+                
+        cursor = None
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT password_hash
+                FROM users 
+                WHERE user_id = %s
+            """, (user_id,))
+            user = cursor.fetchone()
+
+            if not user or not check_password_hash(user[0], current_password):
+                flash("Current password is incorrect.")
+                return redirect(request.url)
+            
+            new_hash = generate_password_hash(new_password)
+
+            cursor.execute("""
+                UPDATE users
+                SET password_hash = %s
+                WHERE user_id = %s
+            """, (new_hash, user_id))
+
+            conn.commit()
+            flash("Password have been updated")
+            return redirect(url_for("profile"))
+
+        except Exception:
+                return "Faild to updte password", 500
+
+        finally:
+            if cursor:
+                cursor.close()
+            conn.close()
+   
+    return render_template("update_password.html")
 
 
