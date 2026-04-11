@@ -51,11 +51,12 @@
     <div class="container text-center">
       <h2 style="color: var(--secondary-color);">Event Categories</h2>
       <div class="d-flex justify-content-center flex-wrap mt-3 mb-4">
-        <button class="category-btn">Exhibitions</button>
-        <button class="category-btn">Workshops</button>
-        <button class="category-btn">Sports</button>
-        <button class="category-btn">Musical</button>
-        <button class="category-btn">Religious</button>
+        <a href="{{ url_for('events', category='all') }}" class="category-btn text-decoration-none">All</a>
+        {% for category in categories %}
+          <a href="{{ url_for('events', category=category.name) }}" class="category-btn text-decoration-none">
+            {{ category.name }}
+          </a>
+        {% endfor %}
       </div>
 
       <form class="d-flex justify-content-center flex-wrap gap-3">

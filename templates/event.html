@@ -115,6 +115,12 @@
 
     <div class="container-fluid p-5 text-center" id="hero">
         <h1 style="color: var(--primary-color);">{{event.name}}</h1>
+        <div class="event-meta">
+          {% if event.is_free %}
+            <span class="meta-badge free-badge">FREE EVENT</span>
+          {% endif %}
+          <span class="meta-badge"> {{event.venue_name}}</span>
+        </div>
     </div>
 
   <!-- Main Content -->
@@ -122,43 +128,42 @@
     <!-- Left: Event Details -->
     <div class="event-details">
       <h3>General Information</h3>
-      <p>
-        {{event.description}}
-      </p>
 
       <div class="event-info">
-        <span>Date:</span>
-        <p>{{event.start_date}} – {{event.end_date}}</p>
-
-        <span>Venue:</span>
-        <p>{{event.venue_name}}, {{event.venue_address}}</p>
-
-        <span>Special Conditions:</span>
-        <p>{{event.special_conditions or "No special conditions for this event."}}</p>
-
-        <span>Description:</span>
+        <span>About This Event</span>
         <p>
           {{event.description}}
         </p>
+        <span>Date & Time:</span>
+        <p>{{event.start_date.strftime('%d %B %Y %H:%M')}} - {{event.end_date.strftime('%d %B %Y %H:%M')}}</p>
+ 
+        <span>Venue Address:</span>
+        <p>{{event.venue_name}}, {{event.venue_address}}</p>
+
+        <span>Capacity:</span>
+        <p>{{event.capacity}} attendees</p>
+
+        <span>Booking Deadline:</span>
+        <p>{{event.last_date_booking.strftime('%d %B %Y %H:%M')}}</p>
+
+        <span>Special Conditions:</span>
+        <p>{{event.special_conditions or "No special conditions for this event."}}</p>
       </div>
     </div>
 
     <!-- Right: Ticket Information -->
     <div class="ticket-card">
       <h3>Ticket Information</h3>
-      <p><strong>Standard Ticket:</strong> Access for one day.</p>
-      <span>Price: £{{event.price}}</span>
-      <span>Sales end: {{event.last_date_booking}}</span>
-
-      <!-- <hr> -->
-
-      <!-- <p><strong>Weekend Pass:</strong> Access to all sessions for all three days.</p>
-      <span>Price: £35</span>
-      <span>Sales end: March 10, 2025</span> -->
-
+      <p><strong>Standard Ticket:</strong> Access for the full event duration</p>
       <hr>
+      {% if event.is_free %}
+        <div class="price">FREE</div>
+      {% else %}
+        <div class="price">From £{{event.price}}</div>
+      {% endif %}
+      <span>Sales end: {{event.last_date_booking.strftime('%d %B %Y %H:%M')}}</span>
+    
 
-      <div class="price">From £{{event.price}}</div>
       <a href="{{url_for('book_event', event_id=event.event_id)}}"  class="book-button text-decoration-none text-center d-block">Book Now</a>
     
     </div>

@@ -232,7 +232,7 @@
         <div class="event-meta">
           <div class="meta-box">
             <small>Date</small>
-            <strong>{{event.start_date}}</strong>
+            <strong>{{event.start_date.strftime('%d %B %Y %H:%M')}}</strong>
           </div>
           <div class="meta-box">
             <small>Venue</small>
@@ -244,7 +244,7 @@
           </div>
           <div class="meta-box">
             <small>Booking Deadline</small>
-            <strong>{{event.last_date_booking}}</strong>
+            <strong>{{event.last_date_booking.strftime('%d %B %Y %H:%M')}}</strong>
           </div>
         </div>
 

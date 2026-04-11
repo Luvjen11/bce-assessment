@@ -17,41 +17,79 @@ app.register_blueprint(error_page)
 # functions 
 
 # fetch all events
-def get_all_events_with_venue():
+def get_all_events_with_venue_and_category(category_name=None):
 
         conn = getConnection()
         if conn is None or not conn.is_connected():
             return None
         
+        category = (category_name or "").strip()
+        use_filter = bool(category) and category.lower() != "all"
+        
         cursor = None
 
         try:
             cursor = conn.cursor(dictionary=True)
-            cursor.execute("""
-            SELECT 
-                e.event_id, 
-                e.name,
-                e.start_date,
-                e.end_date,
-                e.price,
-                e.last_date_booking,
-                e.description,
-                e.venue_id,
-                e.image_filename,
-                e.is_free,
-                v.name AS venue_name,
-                v.address AS venue_address,
-                GROUP_CONCAT(c.name ORDER BY c.name SEPARATOR ",") AS categories 
-            FROM events e 
-            LEFT JOIN venues v ON e.venue_id = v.venue_id 
-            LEFT JOIN event_categories ec ON e.event_id = ec.event_id
-            LEFT JOIN categories c ON ec.category_id = c.category_id
-            GROUP BY
-                e.event_id, e.name, e.start_date, e.end_date, e.price, e.last_date_booking,
-                e.description, e.venue_id, e.image_filename, e.is_free,
-                v.name, v.address
-            ORDER BY e.start_date ASC 
-            """)
+            # If no filter, get all events
+            if not use_filter:
+                cursor.execute("""
+                    SELECT
+                        e.event_id,
+                        e.name,
+                        e.start_date,
+                        e.end_date,
+                        e.price,
+                        e.last_date_booking,
+                        e.description,
+                        e.venue_id,
+                        e.image_filename,
+                        e.is_free,
+                        v.name AS venue_name,
+                        v.address AS venue_address,
+                        GROUP_CONCAT(c.name ORDER BY c.name SEPARATOR ', ') AS categories
+                    FROM events e
+                    LEFT JOIN venues v ON e.venue_id = v.venue_id
+                    LEFT JOIN event_categories ec ON e.event_id = ec.event_id
+                    LEFT JOIN categories c ON ec.category_id = c.category_id
+                    GROUP BY e.event_id, e.name, e.start_date, e.end_date, e.price,
+                        e.last_date_booking, e.description, e.venue_id,
+                        e.image_filename, e.is_free, v.name, v.address
+                    ORDER BY e.start_date ASC
+                """)
+
+            # If filtering by category
+            else:
+                cursor.execute("""
+                    SELECT
+                        e.event_id,
+                        e.name,
+                        e.start_date,
+                        e.end_date,
+                        e.price,
+                        e.last_date_booking,
+                        e.description,
+                        e.venue_id,
+                        e.image_filename,
+                        e.is_free,
+                        v.name AS venue_name,
+                        v.address AS venue_address,
+                        GROUP_CONCAT(c.name ORDER BY c.name SEPARATOR ', ') AS categories
+                    FROM events e
+                    LEFT JOIN venues v ON e.venue_id = v.venue_id
+                    LEFT JOIN event_categories ec ON e.event_id = ec.event_id
+                    LEFT JOIN categories c ON ec.category_id = c.category_id
+                    WHERE e.event_id IN (
+                        SELECT e2.event_id
+                        FROM events e2
+                        JOIN event_categories ec2 ON e2.event_id = ec2.event_id
+                        JOIN categories c2 ON ec2.category_id = c2.category_id
+                        WHERE c2.name = %s
+                    )
+                    GROUP BY e.event_id, e.name, e.start_date, e.end_date, e.price,
+                        e.last_date_booking, e.description, e.venue_id,
+                        e.image_filename, e.is_free, v.name, v.address
+                    ORDER BY e.start_date ASC
+                """, (category,))
             events = cursor.fetchall()
             return events
         
@@ -103,6 +141,32 @@ def get_event_with_venue(event_id):
                 cursor.close()
             conn.close()
 
+# fetch categories 
+def get_all_categories():
+    conn = getConnection()
+    if conn is None or not conn.is_connected():
+        return None
+        
+    cursor = None
+    try: 
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT 
+                category_id, name
+            FROM categories
+            ORDER BY name ASC   
+        """)
+        category = cursor.fetchall()
+        return category
+            
+    except Exception as e:
+        print(f"Failed to fetch categories: {e}")
+        return None
+    finally:
+        if cursor:
+            cursor.close()
+        conn.close()
+
 # get tickets booked for event 
 def get_tickets_booked_for_event(event_id):
     conn = getConnection()
@@ -152,7 +216,7 @@ def calculate_cancellation_fee(total_price, start_date):
 @app.route("/index")
 @app.route("/home")
 def index():
-    events = get_all_events_with_venue()
+    events = get_all_events_with_venue_and_category()
     today = date.today()
 
     upcoming_events = [e for e in events if e.get("start_date") and e["start_date"].date() >= today]
@@ -171,9 +235,11 @@ def contact():
 
 @app.route("/events")
 def events():
-    events = get_all_events_with_venue()
+    category = request.args.get("category")
+    events = get_all_events_with_venue_and_category(category)
+    categories = get_all_categories()
 
-    return render_template("events.html", events=events)
+    return render_template("events.html", events=events, categories=categories)
 
 # fetch one single event endpoint
 @app.route("/event/<int:event_id>", methods=["GET"])
