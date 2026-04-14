@@ -156,8 +156,8 @@ def get_all_categories():
             FROM categories
             ORDER BY name ASC   
         """)
-        category = cursor.fetchall()
-        return category
+        categories = cursor.fetchall()
+        return categories
             
     except Exception as e:
         print(f"Failed to fetch categories: {e}")
@@ -209,14 +209,99 @@ def calculate_cancellation_fee(total_price, start_date):
     refund = total_price - fee
     return round(fee, 2), round(refund, 2)
 
+# filter events
+def filter_events(search=None, selected_date=None, start_date=None, end_date=None, free_only=None, category=None):
+    
+    conn = getConnection()
+    if conn is None or not conn.is_connected():
+        return "DB Connection Error", 500
 
-        
+    cursor = None
+    params = []
+    query = """
+        SELECT
+            e.event_id,
+            e.name,
+            e.start_date,
+            e.end_date,
+            e.price,
+            e.last_date_booking,
+            e.description,
+            e.venue_id,
+            e.image_filename,
+            e.is_free,
+            v.name AS venue_name,
+            v.address AS venue_address,
+            GROUP_CONCAT(c.name ORDER BY c.name SEPARATOR ', ') AS categories
+        FROM events e
+        LEFT JOIN venues v ON e.venue_id = v.venue_id
+        LEFT JOIN event_categories ec ON e.event_id = ec.event_id
+        LEFT JOIN categories c ON ec.category_id = c.category_id
+        WHERE 1=1
+    """
+    
+    try:
+        cursor = conn.cursor(dictionary=True)
+
+        if category and category.lower() != "all":
+            query += """
+                AND e.event_id IN (
+                    SELECT ec2.event_id
+                    FROM event_categories ec2
+                    JOIN categories c2 ON ec2.category_id = c2.category_id
+                    WHERE c2.name = %s
+                )
+            """
+            params.append(category)
+
+        if search:
+            query += " AND e.name LIKE %s"
+            params.append(f"%{search}%")
+
+        if selected_date:
+            query += " AND DATE(e.start_date) = %s"
+            params.append(selected_date)
+
+        if start_date and end_date:
+            query += " AND DATE(e.start_date) BETWEEN %s AND %s"
+            params.append(start_date)
+            params.append(end_date)
+        elif start_date:
+            query += " AND DATE(e.start_date) >= %s"
+            params.append(start_date)
+        elif end_date:
+            query += " AND DATE(e.start_date) <= %s"
+            params.append(end_date)
+
+        if free_only == "1":
+            query += " AND e.is_free = 1"
+
+        query += """
+            GROUP BY
+                e.event_id, e.name, e.start_date, e.end_date, e.price,
+                e.last_date_booking, e.description, e.venue_id,
+                e.image_filename, e.is_free, v.name, v.address
+            ORDER BY e.start_date ASC
+        """
+
+        cursor.execute(query, tuple(params))
+        return cursor.fetchall()
+    except Exception as e:
+        print(f"Filter error: {e}")
+        return []
+    finally:
+        if cursor:
+            cursor.close()
+        conn.close()
+
+
+                
 # endpoints 
 @app.route("/")
 @app.route("/index")
 @app.route("/home")
 def index():
-    events = get_all_events_with_venue_and_category()
+    events = get_all_events_with_venue_and_category() or []
     today = date.today()
 
     upcoming_events = [e for e in events if e.get("start_date") and e["start_date"].date() >= today]
@@ -235,11 +320,35 @@ def contact():
 
 @app.route("/events")
 def events():
-    category = request.args.get("category")
-    events = get_all_events_with_venue_and_category(category)
-    categories = get_all_categories()
+    category = request.args.get("category", "all")
+    categories = get_all_categories() or []
 
-    return render_template("events.html", events=events, categories=categories)
+    search = request.args.get("search", "").strip()
+    selected_date = request.args.get("date", "")
+    start_date = request.args.get("start_date", "")
+    end_date = request.args.get("end_date", "")
+    free_only = request.args.get("free_only", "")
+
+    filtered_events = filter_events(
+        search=search,
+        selected_date=selected_date,
+        start_date=start_date,
+        end_date=end_date,
+        free_only=free_only,
+        category=category
+    )
+
+    return render_template(
+        "events.html",
+        events=filtered_events,
+        categories=categories,
+        selected_category=category,
+        search=search,
+        date=selected_date,
+        start_date=start_date,
+        end_date=end_date,
+        free_only=free_only
+    )
 
 # fetch one single event endpoint
 @app.route("/event/<int:event_id>", methods=["GET"])
@@ -656,7 +765,6 @@ def cancel_booking(booking_id):
         if cursor:
             cursor.close()
         conn.close()
-    return 
 
 @app.route("/admin")
 def admin():

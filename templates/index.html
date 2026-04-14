@@ -7,8 +7,8 @@
     <div class="container py-5">
       <h1 class="fw-bold mb-3">Bristol Community Events</h1>
       <p class="lead" style="color: var(--secondary-color);">Find festivals, workshops, and gatherings happening around you.</p>
-      <form class="d-flex justify-content-center flex-wrap gap-2 mt-3">
-        <input class="form-control w-75 w-md-50" type="text" placeholder="Search events..." />
+      <form method="GET" action="{{ url_for('events')}}" class="d-flex justify-content-center flex-wrap gap-2 mt-3">
+        <input class="form-control w-75 w-md-50" type="text" placeholder="Search events..." name="search" value="{{ search or '' }}">
         <button class="btn" type="submit" style="background-color: var(--primary-color); color: white;">Search</button>
       </form>
     </div>
@@ -32,7 +32,7 @@
             <h5 class="card-title mt-2">{{event.name}}</h5>
             <p class="text-muted">{{ event.description }}</p>
             <ul class="list-unstyled small text-secondary">
-              <li><strong>Date:</strong> {{ event.start_date }} – {{ event.end_date }}</li>
+              <li><strong>Date:</strong> {{event.start_date.strftime('%d %B %Y %H:%M')}} – {{ event.end_date.strftime('%d %B %Y %H:%M')  }}</li>
               <li><strong>Venue:</strong> {{ event.venue_name }}</li>
               <li><strong>Tickets:</strong> £{{ event.price }}</li>
             </ul>
@@ -62,7 +62,7 @@
             <h5 class="card-title mt-2">{{event.name}}</h5>
             <p class="text-muted">{{ event.description }}</p>
             <ul class="list-unstyled small text-secondary">
-              <li><strong>Date:</strong> {{ event.start_date }} – {{ event.end_date }}</li>
+              <li><strong>Date:</strong> {{event.start_date.strftime('%d %B %Y %H:%M')}} – {{ event.end_date.strftime('%d %B %Y %H:%M')    }}</li>
               <li><strong>Venue:</strong> {{ event.venue_name }}</li>
               <li><strong>Tickets:</strong> £{{ event.price }}</li>
             </ul>
