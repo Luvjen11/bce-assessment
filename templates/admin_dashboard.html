@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="container py-5">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+      <h1 style="color: var(--primary-color);">Admin Dashboard</h1>
+      <p class="text-muted mb-0">Manage events from one page</p>
+    </div>
+    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-secondary">Logout</a>
+  </div>
+
+  <div class="row g-4">
+    <!-- Add/Edit Form -->
+    <div class="col-12 col-lg-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          {% if edit_event %}
+            <h3 class="mb-3" style="color: var(--primary-color);">Edit Event</h3>
+            <form method="POST" action="{{ url_for('admin.edit_events', event_id=edit_event.event_id) }}">
+          {% else %}
+            <h3 class="mb-3" style="color: var(--primary-color);">Add Event</h3>
+            <form method="POST" action="{{ url_for('admin.add_events') }}">
+          {% endif %}
+
+            <div class="mb-3">
+              <label class="form-label">Event Name</label>
+              <input type="text" name="name" class="form-control"
+                value="{{ edit_event.name if edit_event else '' }}" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Start Date</label>
+              <input type="datetime-local" name="start_date" class="form-control"
+                value="{{ edit_event.start_date.strftime('%Y-%m-%dT%H:%M') if edit_event and edit_event.start_date else '' }}" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">End Date</label>
+              <input type="datetime-local" name="end_date" class="form-control"
+                value="{{ edit_event.end_date.strftime('%Y-%m-%dT%H:%M') if edit_event and edit_event.end_date else '' }}" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Price</label>
+              <input type="number" step="0.01" name="price" class="form-control"
+                value="{{ edit_event.price if edit_event else '' }}" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Booking Deadline</label>
+              <input type="date" name="last_date_booking" class="form-control"
+                value="{{ edit_event.last_date_booking.strftime('%Y-%m-%d') if edit_event and edit_event.last_date_booking else '' }}" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Venue</label>
+              <select name="venue_id" class="form-select" required>
+                <option value="">Select venue</option>
+                {% for venue in venues %}
+                  <option value="{{ venue.venue_id }}"
+                    {% if edit_event and edit_event.venue_id == venue.venue_id %}selected{% endif %}>
+                    {{ venue.name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Image Filename</label>
+              <input type="text" name="image_filename" class="form-control"
+                value="{{ edit_event.image_filename if edit_event else '' }}">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Special Conditions</label>
+              <input type="text" name="special_conditions" class="form-control"
+                value="{{ edit_event.special_conditions if edit_event else '' }}">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Description</label>
+              <textarea name="description" class="form-control" rows="4">{{ edit_event.description if edit_event else '' }}</textarea>
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap">
+              <button type="submit" class="btn btn-primary">
+                {% if edit_event %}Update Event{% else %}Add Event{% endif %}
+              </button>
+
+              {% if edit_event %}
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-secondary">Cancel Edit</a>
+              {% endif %}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Events Table -->
+    <div class="col-12 col-lg-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h3 class="mb-3" style="color: var(--primary-color);">All Events</h3>
+
+          {% if events %}
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Venue</th>
+                  <th>Start</th>
+                  <th>Price</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for event in events %}
+                <tr>
+                  <td>{{ event.name }}</td>
+                  <td>{{ event.venue_name or "No venue" }}</td>
+                  <td>{{ event.start_date }}</td>
+                  <td>£{{ event.price }}</td>
+                  <td class="d-flex gap-2 flex-wrap">
+                    <a href="{{ url_for('admin.admin_dashboard', edit_event_id=event.event_id) }}" class="btn btn-sm btn-outline-primary">
+                      Edit
+                    </a>
+
+                    <form method="POST" action="{{ url_for('admin.delete_events', event_id=event.event_id) }}"
+                      onsubmit="return confirm('Delete this event?');">
+                      <button type="submit" class="btn btn-sm btn-outline-danger">
+                        Delete
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+            <p class="text-muted mb-0">No events available.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Add/Edit Form venue -->
+    <div class="col-12 col-lg-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          {% if edit_venue %}
+            <h3 class="mb-3" style="color: var(--primary-color);">Edit Venue</h3>
+            <form method="POST" action="{{ url_for('admin.edit_venues', venue_id=edit_venue.venue_id) }}">
+          {% else %}
+            <h3 class="mb-3" style="color: var(--primary-color);">Add Venue</h3>
+            <form method="POST" action="{{ url_for('admin.add_venues') }}">
+          {% endif %}
+
+            <div class="mb-3">
+              <label class="form-label">Venue Name</label>
+              <input type="text" name="name" class="form-control"
+                value="{{ edit_venue.name if edit_venue else '' }}" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Capacity</label>
+              <input type="number" name="capacity" class="form-control"
+                value="{{ edit_venue.capacity if edit_venue else '' }}" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Address</label>
+              <input type="text" name="address" class="form-control"
+                value="{{ edit_venue.address if edit_venue else '' }}" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Suitable For</label> 
+              <input type="text" name="suitable_event_types" class="form-control" placeholder="Music, Art, Workshop, Family" value="{{ edit_venue.suitable_event_types if edit_venue else '' }}" required >
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap">
+              <button type="submit" class="btn btn-primary">
+                {% if edit_venue %}Update Venue{% else %}Add Venue{% endif %}
+              </button>
+
+              {% if edit_venue %}
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-secondary">Cancel Edit</a>
+              {% endif %}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Venues Table -->
+    <div class="col-12 col-lg-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h3 class="mb-3" style="color: var(--primary-color);">All Venues</h3>
+
+          {% if venues %}
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Capacity</th>
+                  <th>Address</th>
+                  <th>Suitable For</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for venue in venues %}
+                <tr>
+                  <td>{{ venue.name }}</td>
+                  <td>{{ venue.capacity }}</td>
+                  <td>{{ venue.address }}</td>
+                  <td>{{ venue.suitable_event_types }}</td>
+                  <td class="d-flex gap-2 flex-wrap">
+                    <a href="{{ url_for('admin.admin_dashboard', edit_venue_id=venue.venue_id) }}" class="btn btn-sm btn-outline-primary">
+                      Edit
+                    </a>
+
+                    <form method="POST" action="{{ url_for('admin.delete_venues', venue_id=venue.venue_id) }}"
+                      onsubmit="return confirm('Delete this venue?');">
+                      <button type="submit" class="btn btn-sm btn-outline-danger">
+                        Delete
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+            <p class="text-muted mb-0">No venues available.</p>
+          {% endif %}
+        </div>
+      </div>
+  </div>
+</section>
+{% endblock %}

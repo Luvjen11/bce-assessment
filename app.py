@@ -766,10 +766,6 @@ def cancel_booking(booking_id):
             cursor.close()
         conn.close()
 
-@app.route("/admin")
-def admin():
-    return render_template("admin.html")
-
 # @app.route("/getcookie")
 # def get_cookie():
 #     name = request.cookies.get("userID")
