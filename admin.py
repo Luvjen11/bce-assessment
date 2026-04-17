@@ -113,6 +113,14 @@ def admin_dashboard():
 
         venues = cursor.fetchall()
 
+        # users (for user management block)
+        cursor.execute("""
+            SELECT user_id, first_name, last_name, username, email, role, is_student
+            FROM users
+            ORDER BY user_id DESC
+        """)
+        users = cursor.fetchall()
+
         # edit event
         edit_event = None
         if edit_event_id:
@@ -145,9 +153,10 @@ def admin_dashboard():
 
         edit_venue = cursor.fetchone()
         
-        return render_template("admin_dashboard.html", events=events, venues=venues, edit_venue=edit_venue, edit_event=edit_event)
+        return render_template("admin_dashboard.html", events=events, venues=venues, edit_venue=edit_venue, edit_event=edit_event, users=users)
     
-    except Exception:
+    except Exception as e:
+        print(f"Admin dashboard failed: {e}")
         return "Admin dashboard failed", 500
     finally:
         if cursor:
@@ -439,6 +448,140 @@ def delete_venues(venue_id):
         conn.rollback()
         print(f"Delete venue error: {e}")
         return "Failed to delete venue", 500
+    finally:
+        if cursor:
+            cursor.close()
+        conn.close()
+
+# update password of others 
+@admin.route("/users/<int:user_id>/password", methods=["POST"]) 
+@admin_required
+def admin_user_update_password(user_id):
+    
+    new_password = request.form.get("new_password", "")
+    confirm_password = request.form.get("confirm_password", "")
+
+    if not new_password or not confirm_password:
+        flash("All password fields required.")
+        return redirect(request.url)
+                
+    if new_password != confirm_password:
+        flash("New passwords do not match.")
+        return redirect(request.url)
+
+    conn = getConnection()
+    if conn is None or not conn.is_connected():
+        return "DB Connection Error", 500
+                
+    cursor = None
+    try:
+
+        cursor = conn.cursor() 
+        new_hash = generate_password_hash(new_password)
+
+        cursor.execute("""
+            UPDATE users
+            SET password_hash = %s
+            WHERE user_id = %s
+        """, (new_hash, user_id))
+
+        conn.commit()
+        flash("User password have been updated")
+        return redirect(url_for("admin.admin_dashboard"))
+    
+    except Exception as e:
+        conn.rollback()
+        print(f"Update user password error: {e}")
+        return "Failed to update password", 500
+    finally:
+        if cursor:
+            cursor.close()
+        conn.close()
+
+# update all users
+@admin.route("/users/<int:user_id>/edit", methods=["POST"]) 
+@admin_required
+def admin_update_users(user_id):
+
+    first_name = request.form.get("first_name", "").strip()
+    last_name = request.form.get("last_name", "").strip()
+    username = request.form.get("username", "").strip()
+    role = request.form.get("role", "").strip()
+    email = request.form.get("email", "").strip()
+    is_student = request.form.get("is_student", "").strip()
+
+    if not first_name or not last_name or not username or not role or not email or not is_student:
+        flash("Please fill in all required fields")
+        return redirect(url_for("admin.admin_dashboard"))
+
+    if role not in ["admin", "user"]:
+        flash("Invalid role.")
+        return redirect(url_for("admin.admin_dashboard"))
+    
+    if is_student not in ["0", "1"]:
+        flash("Invalid student value.")
+        return redirect(url_for("admin.admin_dashboard"))
+
+    conn = getConnection()
+    if conn is None or not conn.is_connected():
+        return "DB Connection Error", 500
+                
+    cursor = None
+    try:
+        cursor = conn.cursor() 
+        cursor.execute("""
+            UPDATE users
+            SET
+                first_name = %s, 
+                last_name = %s,
+                username = %s,
+                email = %s,
+                role = %s,
+                is_student = %s
+            WHERE user_id = %s
+        """, (first_name, last_name, username, email, role, is_student, user_id))
+
+        conn.commit()
+        flash("User details updated successfully")
+        return redirect(url_for("admin.admin_dashboard"))
+    
+    except Exception as e:
+        conn.rollback()
+        print(f"Update user error: {e}")
+        return "Failed to update user", 500
+    finally:
+        if cursor:
+            cursor.close()
+        conn.close()
+
+# delete users
+@admin.route("/users/<int:user_id>/delete", methods=["POST"])
+@admin_required
+def admin_delete_user(user_id):
+    conn = getConnection()
+    if conn is None or not conn.is_connected():
+        return "DB Connection Error", 500
+
+    cursor = None
+    try:
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT COUNT(*) FROM bookings WHERE user_id = %s", (user_id,))
+        booking_count = cursor.fetchone()[0]
+
+        if booking_count > 0:
+            flash("Cannot delete a user who has bookings.")
+            return redirect(url_for("admin.admin_dashboard"))
+
+        cursor.execute("DELETE FROM users WHERE user_id = %s", (user_id,))
+        conn.commit()
+        flash("User deleted successfully.")
+        return redirect(url_for("admin.admin_dashboard"))
+
+    except Exception as e:
+        conn.rollback()
+        print(f"Delete user error: {e}")
+        return "Failed to delete user", 500
     finally:
         if cursor:
             cursor.close()

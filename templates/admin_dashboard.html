@@ -7,6 +7,7 @@
       <h1 style="color: var(--primary-color);">Admin Dashboard</h1>
       <p class="text-muted mb-0">Manage events from one page</p>
     </div>
+    <a href="{{ url_for('auth.update_password') }}" class="btn btn-outline-secondary">Update Password</a>
     <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-secondary">Logout</a>
   </div>
 
@@ -241,6 +242,101 @@
           {% else %}
             <p class="text-muted mb-0">No venues available.</p>
           {% endif %}
+        </div>
+      </div>
+
+      <!-- User Management -->
+      <div class="col-12 mt-4" id="user-management">
+        <div class="card shadow-sm border-0">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+              <div>
+                <h3 class="mb-1" style="color: var(--primary-color);">User Management</h3>
+              </div>
+              <a href="{{ url_for('auth.update_password') }}" class="btn btn-outline-secondary">
+                Update My Password
+              </a>
+            </div>
+
+            {% if users %}
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Student</th>
+                    <th>Save</th>
+                    <th>Reset Password</th>
+                    <th>Delete</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for user in users %}
+                  <tr>
+                    <td>{{ user.user_id }}</td>
+
+                    <td>
+                      <input form="edit-user-{{ user.user_id }}" type="text" name="first_name" class="form-control form-control-sm" value="{{ user.first_name }}" required>
+                    </td>
+
+                    <td>
+                      <input form="edit-user-{{ user.user_id }}" type="text" name="last_name" class="form-control form-control-sm" value="{{ user.last_name }}" required>
+                    </td>
+
+                    <td>
+                      <input form="edit-user-{{ user.user_id }}" type="text" name="username" class="form-control form-control-sm" value="{{ user.username }}" required>
+                    </td>
+
+                    <td>
+                      <input form="edit-user-{{ user.user_id }}" type="email" name="email" class="form-control form-control-sm" value="{{ user.email }}" required>
+                    </td>
+
+                    <td>
+                      <select form="edit-user-{{ user.user_id }}" name="role" class="form-select form-select-sm" required>
+                        <option value="user" {% if user.role == 'user' %}selected{% endif %}>User</option>
+                        <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+                      </select>
+                    </td>
+
+                    <td>
+                      <select form="edit-user-{{ user.user_id }}" name="is_student" class="form-select form-select-sm" required>
+                        <option value="0" {% if user.is_student == 0 or user.is_student == '0' %}selected{% endif %}>No</option>
+                        <option value="1" {% if user.is_student == 1 or user.is_student == '1' %}selected{% endif %}>Yes</option>
+                      </select>
+                    </td>
+
+                    <td>
+                      <form id="edit-user-{{ user.user_id }}" method="POST" action="{{ url_for('admin.admin_update_users', user_id=user.user_id) }}"></form>
+                      <button form="edit-user-{{ user.user_id }}" type="submit" class="btn btn-sm btn-primary">Save</button>
+                    </td>
+
+                    <td>
+                      <form id="reset-password-{{ user.user_id }}" method="POST" action="{{ url_for('admin.admin_user_update_password', user_id=user.user_id) }}" class="d-flex flex-column gap-2">
+                        <input type="password" name="new_password" class="form-control form-control-sm" placeholder="New password" required>
+                        <input type="password" name="confirm_password" class="form-control form-control-sm" placeholder="Confirm password" required>
+                        <button type="submit" class="btn btn-sm btn-warning">Reset</button>
+                      </form>
+                    </td>
+
+                    <td>
+                      <form method="POST" action="{{ url_for('admin.admin_delete_user', user_id=user.user_id) }}" onsubmit="return confirm('Delete this user?');">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+              <p class="text-muted mb-0">No users found.</p>
+            {% endif %}
+          </div>
         </div>
       </div>
   </div>
