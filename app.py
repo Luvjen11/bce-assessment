@@ -294,7 +294,26 @@ def filter_events(search=None, selected_date=None, start_date=None, end_date=Non
             cursor.close()
         conn.close()
 
+# advance booking discount
+from datetime import datetime
 
+def get_advance_discount_percent(event_start_date):
+    """
+    Return the advance booking discount percentage
+    based on how many days before the event the booking is made.
+    """
+    days_before = (event_start_date.date() - datetime.now().date()).days
+
+    if days_before >= 50:
+        return 20
+    elif days_before >= 40:
+        return 15
+    elif days_before >= 30:
+        return 10
+    elif days_before >= 20:
+        return 5
+    else:
+        return 0
                 
 # endpoints 
 @app.route("/")
@@ -387,6 +406,11 @@ def book_event(event_id):
         student_discount = request.form.get("student_discount") == "1"
         terms = request.form.get("terms") == "1"
         event_day = request.form.get("event_day")
+        payment_method = request.form.get("payment_method")
+        
+        if not payment_method:
+            flash("Please select a payment method.")
+            return redirect(request.url)
 
     # validate quantity
     try: 
@@ -424,9 +448,19 @@ def book_event(event_id):
     
     # calculate price
     unit_price = 0 if event.get("is_free") else float(event.get("price") or 0)
-    total_price = unit_price * quantity
+    base_total = unit_price * quantity
+
+    student_discount_amount = 0
     if student_discount:
-        total_price = round(total_price * 0.9, 2)
+        student_discount_amount = round(base_total * 0.10, 2)
+
+    advance_discount_percent = get_advance_discount_percent(event["start_date"])
+    advance_discount_amount = 0
+    if advance_discount_percent > 0:
+        advance_discount_amount = round(base_total * (advance_discount_percent / 100), 2)
+
+    total_discount = student_discount_amount + advance_discount_amount
+    total_price = round(base_total - total_discount, 2)
 
     # insert into bookings
     conn = getConnection()
@@ -436,8 +470,8 @@ def book_event(event_id):
     cursor = None
     try:
         cursor = conn.cursor()
-        cursor.execute("""INSERT INTO bookings (user_id, event_id, booking_date, status, total_price) VALUES (%s, %s, %s, %s, %s)
-                       """, (user_id, event_id, datetime.now(), "confirmed", total_price))
+        cursor.execute("""INSERT INTO bookings (user_id, event_id, booking_date, status, total_price, student_discount_amount, advance_discount_percent, advance_discount_amount) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                       """, (user_id, event_id, datetime.now(), "confirmed", total_price, student_discount_amount, advance_discount_percent, advance_discount_amount))
         
         booking_id = cursor.lastrowid
 
@@ -481,6 +515,9 @@ def booking_receipt(booking_id):
                 b.booking_date,
                 b.status,
                 b.total_price,
+                b.student_discount_amount,
+                b.advance_discount_percent,
+                b.advance_discount_amount,
                 e.name AS event_name,
                 e.start_date,
                 e.end_date,
@@ -766,29 +803,5 @@ def cancel_booking(booking_id):
             cursor.close()
         conn.close()
 
-# @app.route("/getcookie")
-# def get_cookie():
-#     name = request.cookies.get("userID")
-#     return "<h1>Welcome" + name + "<h1>"
-
 if __name__ == "__main__":
     app.run(debug = True)
-
-
-# if request.method == "GET":
-
-#         conn = getConnection()
-#         if conn is None or not conn.is_connected():
-#             return "DB Connection Error", 500
-        
-#         cursor = None
-
-#         try:
-#             cursor = conn.cursor(dictionary=True)
-#             cursor.execute()
-#         except:
-#             return "Failed to fetch event details", 500
-#         finally:
-#             if cursor:
-#                 cursor.close()
-#             conn.close()

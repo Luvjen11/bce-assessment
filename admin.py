@@ -1,9 +1,162 @@
 from flask import Blueprint, render_template, request, redirect, flash, url_for, session, wrappers
 from dbfunc import getConnection
+from datetime import datetime, date 
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps  
 
 admin = Blueprint("admin",__name__)
+
+# get events
+def get_all_events_for_admin():
+    """
+    Fetch all events with venue name, booked tickets, tickets left,
+    event status, and dynamic pricing eligibility.
+    """
+    conn = getConnection()
+    if conn is None or not conn.is_connected():
+        return []
+
+    cursor = None
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT 
+                e.event_id,
+                e.name,
+                e.start_date,
+                e.end_date,
+                e.price,
+                e.last_date_booking,
+                v.name AS venue_name,
+                v.capacity,
+                COALESCE(SUM(
+                    CASE 
+                        WHEN b.status = 'confirmed' THEN bi.quantity
+                        ELSE 0
+                    END
+                ), 0) AS tickets_booked
+            FROM events e
+            LEFT JOIN venues v ON e.venue_id = v.venue_id
+            LEFT JOIN bookings b ON e.event_id = b.event_id
+            LEFT JOIN booking_items bi ON b.booking_id = bi.booking_id
+            GROUP BY 
+                e.event_id, e.name, e.start_date, e.end_date,
+                e.price, e.last_date_booking, v.name, v.capacity
+            ORDER BY e.start_date ASC
+        """)
+        events = cursor.fetchall()
+
+        for event in events:
+            capacity = event["capacity"] or 0
+            booked = event["tickets_booked"] or 0
+            tickets_left = capacity - booked
+
+            event["tickets_left"] = tickets_left
+            event["event_status"] = "Fully Booked" if tickets_left <= 0 else "Available"
+
+            days_until_event = (event["start_date"].date() - datetime.now().date()).days
+
+            booking_ratio = 0
+            if capacity > 0:
+                booking_ratio = booked / capacity
+
+            event["eligible_dynamic"] = days_until_event <= 10 and booking_ratio < 0.5
+
+        return events
+
+    except Exception as e:
+        print(f"Error fetching admin events: {e}")
+        return []
+    finally:
+        if cursor:
+            cursor.close()
+        conn.close()
+
+# get bookings 
+def get_all_bookings_for_admin():
+    """
+    Fetch all bookings with event name, username, booking date,
+    total price, and booking status.
+    """
+    conn = getConnection()
+    if conn is None or not conn.is_connected():
+        return []
+
+    cursor = None
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT
+                b.booking_id,
+                b.booking_date,
+                b.status,
+                b.total_price,
+                u.username,
+                e.name AS event_name
+            FROM bookings b
+            JOIN users u ON b.user_id = u.user_id
+            JOIN events e ON b.event_id = e.event_id
+            ORDER BY b.booking_date DESC
+        """)
+        return cursor.fetchall()
+
+    except Exception as e:
+        print(f"Error fetching bookings: {e}")
+        return []
+    finally:
+        if cursor:
+            cursor.close()
+        conn.close()
+
+# reports for event
+def get_event_report(event_id):
+    """
+    Generate a simple report for one event:
+    - number of confirmed bookings
+    - profit earned
+    - tickets left
+    """
+    conn = getConnection()
+    if conn is None or not conn.is_connected():
+        return None
+
+    cursor = None
+    try:
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT
+                e.event_id,
+                e.name,
+                v.capacity,
+                COALESCE(COUNT(DISTINCT CASE WHEN b.status = 'confirmed' THEN b.booking_id END), 0) AS total_bookings,
+                COALESCE(SUM(CASE WHEN b.status = 'confirmed' THEN b.total_price ELSE 0 END), 0) AS total_profit,
+                COALESCE(SUM(CASE WHEN b.status = 'confirmed' THEN bi.quantity ELSE 0 END), 0) AS tickets_booked
+            FROM events e
+            LEFT JOIN venues v ON e.venue_id = v.venue_id
+            LEFT JOIN bookings b ON e.event_id = b.event_id
+            LEFT JOIN booking_items bi ON b.booking_id = bi.booking_id
+            WHERE e.event_id = %s
+            GROUP BY e.event_id, e.name, v.capacity
+        """, (event_id,))
+
+        report = cursor.fetchone()
+
+        if report:
+            capacity = report["capacity"] or 0
+            booked = report["tickets_booked"] or 0
+            report["tickets_left"] = capacity - booked
+
+        return report
+
+    except Exception as e:
+        print(f"Error generating event report: {e}")
+        return None
+    finally:
+        if cursor:
+            cursor.close()
+        conn.close()
+
 
 def admin_required(f):
     @wraps(f)
@@ -74,6 +227,16 @@ def admin_login():
 @admin_required
 def admin_dashboard():
 
+    """
+    Admin dashboard view.
+
+    Provides:
+    - Event and venue management data
+    - Booking status lookup by booking id
+    - Event booking status
+    - Admin reports 
+    """
+
     edit_event_id = request.args.get("edit_event_id", type=int)
     edit_venue_id = request.args.get("edit_venue_id", type=int)
 
@@ -84,27 +247,10 @@ def admin_dashboard():
     cursor = None
     try:
         cursor = conn.cursor(dictionary=True)
-        # all events
-        cursor.execute("""
-            SELECT
-                e.event_id,
-                e.name,
-                e.start_date,
-                e.end_date,
-                e.price,
-                e.last_date_booking,
-                e.description,
-                e.image_filename,
-                e.special_conditions,  
-                e.venue_id,
-                v.name AS venue_name
-            FROM events e
-            LEFT JOIN venues v ON e.venue_id = v.venue_id
-            ORDER BY e.start_date ASC 
-        """)
-        events = cursor.fetchall()
-
-        # venues
+            
+        # get events
+        events = get_all_events_for_admin()
+        # get venues
         cursor.execute("""
             SELECT venue_id, name, capacity, address, suitable_event_types
             FROM venues
@@ -113,7 +259,7 @@ def admin_dashboard():
 
         venues = cursor.fetchall()
 
-        # users (for user management block)
+        # get users 
         cursor.execute("""
             SELECT user_id, first_name, last_name, username, email, role, is_student
             FROM users
@@ -152,8 +298,20 @@ def admin_dashboard():
             """, (edit_venue_id,))
 
         edit_venue = cursor.fetchone()
-        
-        return render_template("admin_dashboard.html", events=events, venues=venues, edit_venue=edit_venue, edit_event=edit_event, users=users)
+
+        # get bookings
+        bookings = get_all_bookings_for_admin()
+
+        # get reports by event id
+        report = None
+        selected_event_id = request.args.get("report_event_id")
+        if selected_event_id:
+            try:
+                report = get_event_report(int(selected_event_id))
+            except ValueError:
+                flash("Invalid event selected for report.")
+            
+        return render_template("admin_dashboard.html", venues=venues, events=events, edit_venue=edit_venue, edit_event=edit_event, users=users, bookings=bookings, report=report)
     
     except Exception as e:
         print(f"Admin dashboard failed: {e}")

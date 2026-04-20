@@ -113,6 +113,11 @@
                   <th>Venue</th>
                   <th>Start</th>
                   <th>Price</th>
+                  <th>Capacity</th>
+                  <th>Booked</th>
+                  <th>Left</th>
+                  <th>Status</th>
+                  <th>Dynamic Pricing Eligible</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -123,6 +128,21 @@
                   <td>{{ event.venue_name or "No venue" }}</td>
                   <td>{{ event.start_date }}</td>
                   <td>£{{ event.price }}</td>
+                  <td>{{ event.capacity }}</td>
+                  <td>{{ event.tickets_booked }}</td>
+                  <td>{{ event.tickets_left }}</td>
+                  <td>
+                    {% if event.event_status == "Fully Booked" %}
+                      <span class="badge bg-danger">Fully Booked</span>
+                    {% else %}
+                      <span class="badge bg-success">Available</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if event.eligible_dynamic %}
+                      <span class="badge bg-warning text-dark">Eligible for price reduction</span>
+                    {% endif %}
+                  </td>
                   <td class="d-flex gap-2 flex-wrap">
                     <a href="{{ url_for('admin.admin_dashboard', edit_event_id=event.event_id) }}" class="btn btn-sm btn-outline-primary">
                       Edit
@@ -245,6 +265,30 @@
         </div>
       </div>
 
+      <!-- Booking Status Table -->
+      <h2>All Bookings</h2>
+      <table class="table">
+        <tr>
+          <th>Booking ID</th>
+          <th>User</th>
+          <th>Event</th>
+          <th>Date</th>
+          <th>Total</th>
+          <th>Status</th>
+        </tr>
+
+        {% for booking in bookings %}
+        <tr>
+          <td>{{ booking.booking_id }}</td>
+          <td>{{ booking.username }}</td>
+          <td>{{ booking.event_name }}</td>
+          <td>{{ booking.booking_date }}</td>
+          <td>£{{ booking.total_price }}</td>
+          <td>{{ booking.status }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+
       <!-- User Management -->
       <div class="col-12 mt-4" id="user-management">
         <div class="card shadow-sm border-0">
@@ -298,8 +342,8 @@
 
                     <td>
                       <select form="edit-user-{{ user.user_id }}" name="role" class="form-select form-select-sm" required>
-                        <option value="user" {% if user.role == 'user' %}selected{% endif %}>User</option>
-                        <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+                        <option value="standard" {% if user.role == 'standard' %}selected{% endif %}>standard</option>
+                        <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>admin</option>
                       </select>
                     </td>
 
@@ -339,6 +383,31 @@
           </div>
         </div>
       </div>
+
+      <!-- Admin Event Reports -->
+      <h2>Event Report</h2>
+
+      <form method="GET" action="{{ url_for('admin.admin_dashboard') }}">
+        <div class="mb-3">
+          <label for="report_event_id" class="form-label">Select Event</label>
+          <select name="report_event_id" id="report_event_id" class="form-select" required>
+            <option value="">Choose event</option>
+            {% for event in events %}
+            <option value="{{ event.event_id }}">{{ event.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Generate Report</button>
+      </form>
+
+      {% if report %}
+      <div class="card mt-4 p-3">
+        <h3>{{ report.name }}</h3>
+        <p><strong>Total confirmed bookings:</strong> {{ report.total_bookings }}</p>
+        <p><strong>Total profit:</strong> £{{ report.total_profit }}</p>
+        <p><strong>Tickets left:</strong> {{ report.tickets_left }}</p>
+      </div>
+      {% endif %}
   </div>
 </section>
 {% endblock %}

@@ -328,6 +328,19 @@
             </div>
           </div>
 
+          <div class="mb-3">
+            <label for="payment_method" class="form-label">Payment Method</label>
+            <select class="form-select" id="payment_method" name="payment_method" required>
+              <option value="">Select payment method</option>
+              <option value="paypal">PayPal</option>
+            </select>
+          </div>
+
+            <p class="mb-2"><strong>Pay with PayPal</strong></p>
+            <button type="button" class="btn btn-warning w-100" disabled>
+              PayPal Checkout (Demo Only)
+            </button>
+
           <button type="submit" class="book-btn">Confirm Booking</button>
         </form>
 

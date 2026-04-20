@@ -122,6 +122,11 @@
         <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger"
           >Logout</a
         >
+        {% if session.get("role") == "admin" %}
+          <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-soft">
+            Admin Dashboard
+          </a>
+        {% endif %}
       </div>
     </div>
 

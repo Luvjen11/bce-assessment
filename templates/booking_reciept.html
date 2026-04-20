@@ -93,7 +93,45 @@
         </tbody>
       </table>
 
-      <div class="receipt-total">Total: £{{ booking.total_price }}</div>
+      <div class="price-breakdown">
+        <h5>Price Breakdown</h5>
+
+        {% if items %}
+          {% set ns = namespace(base_total=0) %}
+          {% for item in items %}
+            {% set ns.base_total = ns.base_total + (item.quantity * item.unit_price) %}
+          {% endfor %}
+
+          <div class="summary-line">
+            <span>Base Price</span>
+            <span>£{{ "%.2f"|format(ns.base_total) }}</span>
+          </div>
+
+          {% if booking.student_discount_amount and booking.student_discount_amount > 0 %}
+          <div class="summary-line discount">
+            <span>Student Discount (10%)</span>
+            <span>-£{{ "%.2f"|format(booking.student_discount_amount) }}</span>
+          </div>
+          {% endif %}
+
+          {% if booking.advance_discount_percent and booking.advance_discount_percent > 0 %}
+          <div class="summary-line discount">
+            <span>Advance Booking Discount ({{ booking.advance_discount_percent }}%)</span>
+            <span>-£{{ "%.2f"|format(booking.advance_discount_amount) }}</span>
+          </div>
+          {% endif %}
+        {% else %}
+          <div class="summary-line">
+            <span>Base Price</span>
+            <span>£0.00</span>
+          </div>
+        {% endif %}
+
+        <div class="summary-line total">
+          <span><strong>Total Paid</strong></span>
+          <span><strong>£{{ "%.2f"|format(booking.total_price) }}</strong></span>
+        </div>
+      </div>
 
       <div class="mt-4 d-flex gap-3 flex-wrap no-print">
         <button onclick="window.print()" class="btn btn-primary">Download as PDF</button>
