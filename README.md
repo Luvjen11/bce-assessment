@@ -1,20 +1,148 @@
-## **Bristol Community Events (BCE) — Project Specification & Documentation**
+## Bristol Community Events (BCE)
 
-### **1. Project Overview**
+## 1. Project Overview
 
-**Bristol Community Events (BCE)** is a web-based platform designed to promote, manage, and connect community events within the Bristol area.
-The platform aims to make discovering, booking, and managing local events seamless for users while providing administrators with efficient tools for managing event data, venues, and bookings.
+Bristol Community Events (BCE) is a web-based platform designed to promote, manage, and connect community events within the Bristol area.
 
-BCE was developed as part of an ongoing initiative to digitalise local community engagement and event participation. The system emphasises accessibility, simplicity, and responsive design.
+The platform aims to make discovering, booking, and managing local events seamless for users while providing administrators with efficient tools for managing event data, venues, bookings, and reporting.
 
-### **Project scope**
+This project demonstrates full-stack web development, relational database design in 3NF, and practical backend logic such as discounts, cancellation fee rules, and waiting list handling.
 
+## 2. Core Features
 
+### User Features
 
-### **2. Database Design**
+- User registration, login, and logout
+- View event listings and event details
+- Filter events by category and search criteria
+- Book tickets for available events
+- Student discount support
+- Advance booking discount support
+- Booking receipt view
+- Booking updates (where allowed)
+- Booking cancellations with fee and refund rules
+- Profile view with upcoming, past, and cancelled bookings
+- Waiting list join when an event is full
+- Offered place visibility in profile (where configured)
+
+### Admin Features
+
+- Admin login with role-based access checks
+- Event management: add, edit, and delete events
+- Venue management: add, edit, and delete venues
+- User management: update details, reset password, and delete users (with safeguards)
+- Booking status overview
+- Event status overview (tickets left, fully booked or available)
+- Reports for specific events (profit approximation, booking count, tickets remaining)
+
+### Booking and Pricing Features
+
+- Capacity validation to prevent overbooking
+- Multi-day event booking support (selected day storage in `booking_items`)
+- Student discount (10 percent)
+- Advance booking discount tiers
+- Cancellation fee policy:
+    - 40+ days before event: no cancellation fee
+    - 25-39 days before event: 40 percent fee
+    - Under 25 days: 100 percent fee
+- Simulated checkout flow (no live payment processing)
+
+## 3. Tech Stack
+
+- Backend: Python, Flask
+- Database: MySQL
+- Frontend: HTML, CSS, Bootstrap
+- Templating: Jinja2
+- Authentication: Flask sessions
+- Security: Werkzeug password hashing
+
+### Python Dependencies
+
+- Flask
+- mysql-connector-python
+- python-dotenv
+
+## 4. Setup Instructions
+
+### 1) Clone the project
+
+```bash
+git clone <your-repo-url>
+cd bce-assessment
+```
+
+### 2) Create and activate a virtual environment
+
+Windows:
+
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+macOS/Linux:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 3) Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+If you do not have a `requirements.txt` yet, create one with:
+
+```txt
+Flask
+mysql-connector-python
+python-dotenv
+```
+
+Then run:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4) Configure environment variables
+
+Create a `.env` file:
+
+```env
+FLASK_SECRET_KEY=your_secret_key
+DB_HOST=
+DB_USER=
+DB_PASSWORD=
+DB_NAME=
+```
+
+### 5) Configure database
+
+- Create the MySQL database
+- Run your schema script
+- Run seed data script (optional)
+
+### 6) Run the app
+
+```bash
+python app.py
+```
+
+Then open:
+
+```text
+http://127.0.0.1:5000
+```
+
+## 5. Database Design
 
 **Top-down Approach**
+
 **Conceptual Design**
+
 **Entities**
 - Event
 - User
@@ -143,4 +271,72 @@ event_id → venue_id and venue_id → capacity, so event_id → capacity (trans
 **Physical Database**
 
 The schema is implemented in MySQL.
+
+## 6. Security Measures
+
+### SQL Injection Prevention
+
+- Parameterized SQL queries (`%s`) are used throughout the backend.
+- User input is not concatenated directly into SQL strings.
+
+Example:
+
+```python
+cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+```
+
+### XSS Mitigation
+
+- Jinja templates auto-escape output by default.
+- User content is rendered as escaped text unless explicitly marked otherwise.
+- Unsafe rendering for user-controlled content is avoided.
+
+### Authentication and Authorization
+
+- Session-based login is used for authentication.
+- Role checks are applied to admin-only routes.
+- Passwords are stored as hashes using Werkzeug.
+
+## 7. Legal, Ethical, Social, and Professional Considerations
+
+### Legal
+
+- Privacy Policy and Terms and Conditions pages are included.
+- The project is educational and does not process real commercial payments.
+- Only necessary account and booking data is collected.
+
+### Ethical
+
+- Clear disclosure of booking, discount, and cancellation rules.
+- Passwords are securely stored as hashes.
+- Simulated payment flow is communicated transparently.
+
+### Social
+
+- Simple and responsive UI for accessibility.
+- Support for free events and discounted access.
+- Community-focused design intended for broad user access.
+
+### Professional
+
+- Separation of user and admin concerns.
+- Structured database design in 3NF.
+- Input validation and error handling across core routes.
+
+## 8. Limitations and Future Improvements
+
+- Full waiting-list acceptance workflow can be expanded
+- Email notifications for booking and waiting-list events can be added
+- CSRF protection can be strengthened
+- More advanced reporting and analytics can be added
+- UI/UX refinements can improve usability further
+
+## 9. Final Note
+
+This project demonstrates practical integration of:
+
+- Flask routing and template rendering
+- MySQL relational design and normalization
+- User/admin authentication and role control
+- Booking business logic, discounts, cancellations, and waiting list handling
 
