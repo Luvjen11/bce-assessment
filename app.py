@@ -407,7 +407,7 @@ def book_event(event_id):
         terms = request.form.get("terms") == "1"
         event_day = request.form.get("event_day")
         payment_method = request.form.get("payment_method")
-        
+
         if not payment_method:
             flash("Please select a payment method.")
             return redirect(request.url)
@@ -439,7 +439,7 @@ def book_event(event_id):
 
     # validate capacity
     if remaining_tickets <= 0:
-        flash("This event is fully booked.")
+        flash("This event is fully booked. Please join the waiting list.")
         return redirect(url_for("event_with_venue", event_id=event_id))
     
     if quantity > remaining_tickets:
@@ -601,6 +601,27 @@ def profile():
         """, (user_id,))
         bookings = cursor.fetchall()
 
+        cursor.execute("""
+            SELECT
+                wl.waiting_id,
+                wl.joined_at,
+                wl.status,
+                e.event_id,
+                e.name AS event_name,
+                e.start_date,
+                e.end_date,
+                v.name AS venue_name
+            FROM waiting_list wl
+            JOIN events e ON wl.event_id = e.event_id
+            LEFT JOIN venues v ON e.venue_id = v.venue_id
+            WHERE wl.user_id = %s
+            AND wl.status = 'offered'
+            AND e.start_date >= NOW()
+            ORDER BY e.start_date ASC
+        """, (user_id,))
+
+        offered_places = cursor.fetchall()
+
         today = datetime.now()
 
         upcoming_bookings = [b for b in bookings if b["start_date"] >= today and b["status"] == "confirmed"]
@@ -612,7 +633,8 @@ def profile():
             user=user,
             upcoming_bookings=upcoming_bookings,
             past_bookings=past_bookings,
-            cancelled_bookings=cancelled_bookings
+            cancelled_bookings=cancelled_bookings,
+            offered_places=offered_places
         )
 
     except Exception as e:
@@ -757,6 +779,7 @@ def cancel_booking(booking_id):
             SELECT
                 b.booking_id,
                 b.user_id,
+                b.event_id,
                 b.status,
                 b.total_price,
                 e.start_date,
@@ -779,6 +802,30 @@ def cancel_booking(booking_id):
             booking["start_date"]
         )
 
+        cursor.execute(
+            """
+            SELECT waiting_id, user_id
+            FROM waiting_list
+            WHERE event_id = %s
+            AND status = %s
+            ORDER BY joined_at ASC
+            LIMIT 1
+            """,
+            (booking["event_id"], "waiting")
+            )
+        
+        first_waiting = cursor.fetchone()
+
+        if first_waiting:
+                cursor.execute(
+                    """
+                    UPDATE waiting_list
+                    SET status = %s
+                    WHERE waiting_id = %s
+                    """,
+                    ("offered", first_waiting["waiting_id"])
+                    )
+
         cursor.execute("""
             UPDATE bookings
             SET status = %s,
@@ -788,10 +835,14 @@ def cancel_booking(booking_id):
         """, ("cancelled", fee, refund, booking_id))
 
         conn.commit()
-
-        flash(
-            f"Booking cancelled successfully. Cancellation fee: £{fee:.2f}. Refund: £{refund:.2f}."
-        )
+        if first_waiting:
+            flash(
+            f"Booking cancelled successfully. Cancellation fee: £{fee:.2f}. Refund: £{refund:.2f}. "
+            "A waiting-list user has been marked as offered.")
+        else:
+            flash(
+                f"Booking cancelled successfully. Cancellation fee: £{fee:.2f}. Refund: £{refund:.2f}."
+            )
         return redirect(url_for("profile"))
 
     except Exception as e:
@@ -802,6 +853,34 @@ def cancel_booking(booking_id):
         if cursor:
             cursor.close()
         conn.close()
+
+@app.route("/event/<int:event_id>/waiting-list",methods=["POST"])
+@login_required
+def join_waiting_list(event_id):
+    user_id=session.get("user_id")
+    if not user_id:
+        flash("Please login first.")
+        return redirect(url_for("auth.login"))
+
+    conn=getConnection()
+    cursor=conn.cursor()
+
+    try:
+        cursor.execute("""
+                    INSERT INTO waiting_list (event_id, user_id, joined_at, status)
+                    VALUES (%s, %s, %s, %s)
+                """, (event_id,user_id,datetime.now(),"waiting"))
+        conn.commit()
+        flash("You have been added to the waiting list.")
+    except Exception as e:
+        conn.rollback()
+        print(e)
+        flash("Could not join waiting list.")
+    finally:
+        cursor.close()
+        conn.close()
+
+    return redirect(url_for("event_with_venue",event_id=event_id))
 
 if __name__ == "__main__":
     app.run(debug = True)

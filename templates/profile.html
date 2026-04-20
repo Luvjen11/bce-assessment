@@ -130,6 +130,26 @@
       </div>
     </div>
 
+     <!-- Offered Places -->
+    <div class="profile-card">
+      <h2 class="section-title">Offered Places</h2>
+
+      {% if offered_places %} {% for booking in offered_places %}
+      <div class="booking-item">
+        <span class="status-badge">{{ booking.status|capitalize }}</span>
+        <h5>{{ booking.event_name }}</h5>
+
+        <div class="booking-meta">
+          <div><strong>Date:</strong> {{ booking.start_date }}</div>
+          <div><strong>Venue:</strong> {{ booking.venue_name }}</div>
+          <div><strong>Total:</strong> £{{ booking.total_price }}</div>
+        </div>
+      </div>
+      {% endfor %} {% else %}
+      <p class="empty-state">No offered bookings yet.</p>
+      {% endif %}
+    </div>
+
     <!-- Upcoming Bookings -->
     <div class="profile-card">
       <h2 class="section-title">Upcoming Bookings</h2>

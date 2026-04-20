@@ -253,96 +253,107 @@
           {{event.description}}
         </div>
 
-        <form method="POST">
+      
+          
+
+          {% if remaining_tickets <= 0 %}
           <!-- hidden event id later with Flask -->
           <input type="hidden" name="event_id" value="{{event.event_id}}" />
+            <p class="text-danger">This event is fully booked.</p>
+            <form method="POST" action="{{ url_for('join_waiting_list', event_id=event.event_id) }}">
+              <button type="submit" class="btn btn-secondary">Join Waiting List</button>
+            </form>
+          {% else %}
+            <form method="POST">
+              <!-- hidden event id later with Flask -->
+              <input type="hidden" name="event_id" value="{{ event.event_id }}" />
 
-          <div class="mb-3">
-            <label for="quantity" class="form-label">Number of tickets</label>
-            <input
-              type="number"
-              class="form-control"
-              id="quantity"
-              name="quantity"
-              min="1"
-              max="{{remaining_tickets}}"
-              placeholder="Enter quantity"
-              required
-            />
-          </div>
+              <div class="mb-3">
+                <label for="quantity" class="form-label">Number of tickets</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="quantity"
+                  name="quantity"
+                  min="1"
+                  max="{{ remaining_tickets }}"
+                  placeholder="Enter quantity"
+                  required
+                />
+              </div>
 
-          <!-- Multi-day support placeholder -->
-          <div class="mb-3">
-            <label for="event_day" class="form-label">Select event day</label>
-            <select class="form-select" id="event_day" name="event_day">
-              <option selected value="{{event.start_date}}">{{event.start_date}}</option>
-            </select>
-            <div class="muted-text mt-2">
-              For multi-day events, users will be able to select one or more
-              available event days.
-            </div>
-          </div>
+              <!-- Multi-day support placeholder -->
+              <div class="mb-3">
+                <label for="event_day" class="form-label">Select event day</label>
+                <select class="form-select" id="event_day" name="event_day">
+                  <option selected value="{{event.start_date}}">{{event.start_date}}</option>
+                </select>
+                <div class="muted-text mt-2">
+                  For multi-day events, users will be able to select one or more
+                  available event days.
+                </div>
+              </div>
 
-          <div class="checkbox-group">
-            <div class="form-check">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                value="1"
-                id="student_discount"
-                name="student_discount"
-              />
-              <label class="form-check-label" for="student_discount">
-                I confirm I am eligible for the 10% student discount.
-              </label>
-            </div>
+              <div class="checkbox-group">
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    value="1"
+                    id="student_discount"
+                    name="student_discount"
+                  />
+                  <label class="form-check-label" for="student_discount">
+                    I confirm I am eligible for the 10% student discount.
+                  </label>
+                </div>
 
-            <div class="form-check">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                value="1"
-                id="advance_discount_info"
-                checked
-                disabled
-              />
-              <label class="form-check-label" for="advance_discount_info">
-                Advance booking discounts will be applied automatically where
-                eligible.
-              </label>
-            </div>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    value="1"
+                    id="advance_discount_info"
+                    checked
+                    disabled
+                  />
+                  <label class="form-check-label" for="advance_discount_info">
+                    Advance booking discounts will be applied automatically where
+                    eligible.
+                  </label>
+                </div>
 
-            <div class="form-check">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                value="1"
-                id="terms"
-                name="terms"
-                required
-              />
-              <label class="form-check-label" for="terms">
-                I agree to the <a href="/terms">Terms & Conditions</a> and
-                understand the cancellation policy.
-              </label>
-            </div>
-          </div>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    value="1"
+                    id="terms"
+                    name="terms"
+                    required
+                  />
+                  <label class="form-check-label" for="terms">
+                    I agree to the <a href="/terms">Terms & Conditions</a> and
+                    understand the cancellation policy.
+                  </label>
+                </div>
+              </div>
 
-          <div class="mb-3">
-            <label for="payment_method" class="form-label">Payment Method</label>
-            <select class="form-select" id="payment_method" name="payment_method" required>
-              <option value="">Select payment method</option>
-              <option value="paypal">PayPal</option>
-            </select>
-          </div>
+              <div class="mb-3">
+                <label for="payment_method" class="form-label">Payment Method</label>
+                <select class="form-select" id="payment_method" name="payment_method" required>
+                  <option value="">Select payment method</option>
+                  <option value="paypal">PayPal</option>
+                </select>
+              </div>
 
             <p class="mb-2"><strong>Pay with PayPal</strong></p>
             <button type="button" class="btn btn-warning w-100" disabled>
               PayPal Checkout (Demo Only)
             </button>
-
-          <button type="submit" class="book-btn">Confirm Booking</button>
-        </form>
+            <button type="submit" class="book-btn">Confirm Booking</button>
+          </form>
+        {% endif %}
 
         <a href="{{ url_for('event_with_venue', event_id=event.event_id) }}" class="secondary-link">← Back to event details</a>
       </div>
