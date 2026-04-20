@@ -39,7 +39,7 @@
 
     <div class="container-fluid p-5 text-center" id="hero">
         <h1 style="color: var(--primary-color);">Terms and Conditions</h1>
-        <p>Last updated: November 2025</p>
+        <p>Last updated: April 2026</p>
     </div>
 
     <!-- Terms Section -->
@@ -64,82 +64,42 @@
         </ul>
 
         <h3>2. Event Bookings and Cancellations</h3>
-        <p>
-          Users can book available events through their BCE account. Each venue has a limited capacity, and bookings will
-          close once capacity is reached or the last booking date passes.
-        </p>
-
         <ul>
-          <li>Bookings can be updated or cancelled through the user’s account dashboard.</li>
-          <li>
-            Cancellations are subject to the following refund and fee rules:
-            <ul>
-              <li><strong>40+ days before event:</strong> No cancellation fee (full refund).</li>
-              <li><strong>25–39 days before event:</strong> 40% of booking price will be charged.</li>
-              <li><strong>Within 25 days of event:</strong> No refund available.</li>
-            </ul>
-          </li>
-          <li>Refunds are processed within 7–14 working days (simulated for coursework purposes).</li>
-          <li>Users cannot transfer bookings to another person.</li>
+          <li>Bookings are subject to venue capacity and booking deadline.</li>
+          <li>Users may update or cancel eligible bookings from their profile area.</li>
+          <li>Cancellation fees are calculated by event start date:
+            40+ days: no fee, 25-39 days: 40% fee, under 25 days: 100% fee.</li>
+          <li>Refund values shown in BCE are system-calculated records for coursework simulation.</li>
+          <li>Past events cannot be newly booked through the platform.</li>
         </ul>
 
         <h3>3. Discounts</h3>
-        <p>
-          The BCE system applies automatic discounts based on booking conditions:
-        </p>
         <ul>
-          <li><strong>Student Discount:</strong> 10% off ticket price (no ID required – user confirmation only).</li>
-          <li>
-            <strong>Advance Booking Discount:</strong> Between 5%–20% depending on how early the booking is made (up to 60 days in advance).
-          </li>
-        </ul>
-        <p>
-          Discounts are calculated automatically during the checkout process and shown on the generated booking receipt.
-        </p>
-
-        <h3>4. Free and Paid Events</h3>
-        <ul>
-          <li>Some community events are marked as “Free.” Users can still book them to reserve a spot.</li>
-          <li>Paid events display their price clearly, including any discount applied.</li>
+          <li>Student discount: 10% (user declaration).</li>
+          <li>Advance booking discount: tiered discount based on days before event.</li>
+          <li>Discount values are applied during booking and shown in booking records/receipt view.</li>
         </ul>
 
-        <h3>5. Dynamic Pricing Policy</h3>
+        <h3>4. Multi-day Events</h3>
         <p>
-          Admins may reduce ticket prices for events where less than 50% of tickets are sold within 10 days of the start
-          date. The reduction will be at least 25% to encourage more participation.
+          For events spanning multiple dates, users may select event day(s) presented by the system.
+          Pricing is calculated using selected day count and booking quantity.
         </p>
 
-        <h3>6. Waiting List Policy</h3>
+        <h3>5. Waiting List Policy</h3>
         <p>
-          If an event is fully booked, users may join a waiting list. If a cancellation occurs, the first person on the
-          list will be contacted automatically and given priority to book.
+          When an event is full, users may join the waiting list. If a booking is cancelled, the
+          earliest waiting entry may be marked as offered. Automated email notification is not
+          guaranteed in this coursework implementation.
         </p>
 
-        <h3>7. Admin and Management Terms</h3>
+        <h3>8. Payment and Technical Scope</h3>
         <ul>
-          <li>Admins must log in using their secure admin credentials.</li>
-          <li>Admins can add, update, or remove events and venues.</li>
-          <li>Admins can view all bookings, generate reports, and manage user accounts.</li>
-          <li>Reports may include event profits, total bookings, and available tickets.</li>
+          <li>Checkout is demonstrative for coursework and not a live commercial payment service.</li>
+          <li>Security controls include password hashing, parameterized SQL, and access control checks.</li>
         </ul>
 
-        <h3>8. Technical and Security Information</h3>
-        <ul>
-          <li>
-            BCE implements security measures such as password hashing, input validation, and SQL injection prevention.
-          </li>
-          <li>User passwords are stored securely and cannot be retrieved once created.</li>
-          <li>No real payment systems are integrated — transactions are simulated for educational purposes.</li>
-        </ul>
-
-        <h3>9. Refunds Policy</h3>
-        <p>
-          Refunds are only applicable for cancellations that meet the timelines outlined above. All refund values will be
-          displayed in the user's booking history and receipt. Refunds cannot be processed for missed events or late
-          cancellations.
-        </p>
-
-        <h3>10. Legal, Ethical, and Privacy Notice</h3>
+        <h3>9. Legal, Ethical, and Privacy Notice</h3>
         <ul>
           <li>
             BCE respects user privacy and follows ethical web practices. Any personal data collected (such as names or

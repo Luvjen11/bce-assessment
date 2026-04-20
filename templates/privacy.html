@@ -39,7 +39,7 @@
 
     <div class="container-fluid p-5 text-center" id="hero">
       <h1 style="color: var(--primary-color)">Privacy Policy</h1>
-      <p>Last updated: November 2025</p>
+      <p>Last updated: April 2026</p>
     </div>
 
     <!-- Privacy Policy Section -->
@@ -75,91 +75,45 @@
         </ul>
 
         <h3>2. How We Use Your Information</h3>
-        <p>
-          Your data is used only to support the core functionality of the BCE
-          platform:
-        </p>
         <ul>
-          <li>To manage your account and bookings.</li>
-          <li>To send booking confirmations and updates about events.</li>
-          <li>To respond to user inquiries and provide customer support.</li>
-          <li>To improve website usability and functionality.</li>
+          <li>Create and manage user accounts.</li>
+          <li>Process event bookings, updates, and cancellations.</li>
+          <li>Apply student and advance-booking discounts.</li>
+          <li>Manage waiting-list statuses (for example: waiting, offered).</li>
+          <li>Support admin reporting and platform maintenance.</li>
         </ul>
 
         <h3>3. Data Protection and Security</h3>
-        <p>
-          BCE follows basic data protection practices to keep your information
-          safe. Passwords are stored securely using encryption and cannot be
-          viewed by administrators. No financial or payment data is collected or
-          stored.
-        </p>
         <ul>
-          <li>We use secure server connections (HTTPS) where possible.</li>
-          <li>
-            User input is validated to prevent SQL injection or malicious code.
-          </li>
-          <li>
-            Data access is limited to authorized administrators for educational
-            purposes only.
-          </li>
+          <li>Passwords are stored as hashes and are not visible in plain text.</li>
+          <li>Database queries use parameterized statements to reduce SQL injection risk.</li>
+          <li>User data rendered in templates is protected by Jinja auto-escaping.</li>
         </ul>
 
-        <h3>4. Cookies</h3>
+        <h3>5. Payments</h3>
         <p>
-          This website uses basic session cookies to remember your login state.
-          These cookies do not track or collect personal data and are
-          automatically deleted when you log out or close your browser.
+          BCE uses a demonstration checkout flow for coursework purposes. No live payment gateway
+          is integrated and no real card processing is performed by this website.
         </p>
 
-        <h3>5. Data Sharing</h3>
+        <h3>6. Data Sharing</h3>
         <p>
-          BCE does not sell, rent, or share your personal information with third
-          parties. Data is only used within this platform for managing your
-          event bookings and account activities.
+          BCE does not sell personal data. Information is used only within this platform for account
+          and booking functionality.
         </p>
 
-        <h3>6. User Rights</h3>
-        <p>As a user, you have the right to:</p>
-        <ul>
-          <li>Access the personal data you have provided.</li>
-          <li>Request correction or deletion of your account data.</li>
-          <li>Withdraw consent for email communications.</li>
-        </ul>
+        <h3>7. User Rights</h3>
         <p>
-          To make a request, contact us via <strong>info@bcevents.com</strong>.
+          You may request access or correction of your stored data. Account/data deletion requests can
+          be made via the project contact channel and handled by administrators where appropriate.
         </p>
 
-        <h3>7. Data Retention</h3>
+        <h3>8. Waiting List Data</h3>
         <p>
-          User data is retained only as long as your BCE account is active. You
-          may delete your account at any time, which will remove all personal
-          data from our database.
+          If an event is full, users may join a waiting list. On cancellation, the system may change
+          the earliest waiting record to an offered status. This project does not guarantee real-time
+          external notifications.
         </p>
-
-        <h3>8. Educational Disclaimer</h3>
-        <p>
-          This project is developed for academic purposes as part of the Web
-          Development and Databases module. No real transactions or payments
-          occur. Any personal data entered is simulated for demonstration only.
-        </p>
-
-        <h3>9. Changes to This Policy</h3>
-        <p>
-          BCE may update this Privacy Policy periodically to reflect
-          improvements or course requirements. Updates will be posted on this
-          page with a revised “Last Updated” date.
-        </p>
-
-        <h3>10. Contact Us</h3>
-        <p>
-          If you have questions about this Privacy Policy or how your data is
-          handled, please contact:
-        </p>
-        <ul>
-          <li><strong>Email:</strong> info@bcevents.com</li>
-          <li><strong>Phone:</strong> +44 117 000 111</li>
-          <li><strong>Address:</strong> Bristol, UK</li>
-        </ul>
 
         <p class="mt-5">
           This Privacy Policy is part of an educational project and is not

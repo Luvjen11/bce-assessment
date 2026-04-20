@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, abort, redirect, flash, url_for, session
-from datetime import datetime, date 
+from datetime import datetime, date, timedelta
 from dbfunc import getConnection
 from dotenv import load_dotenv
 load_dotenv()
@@ -238,6 +238,7 @@ def filter_events(search=None, selected_date=None, start_date=None, end_date=Non
         LEFT JOIN event_categories ec ON e.event_id = ec.event_id
         LEFT JOIN categories c ON ec.category_id = c.category_id
         WHERE 1=1
+        AND e.start_date >= NOW()
     """
     
     try:
@@ -314,6 +315,18 @@ def get_advance_discount_percent(event_start_date):
         return 5
     else:
         return 0
+
+def get_event_days(start_date, end_date):
+
+    days = []
+    current_day = start_date.date()
+    last_day = end_date.date()
+
+    while current_day <= last_day:
+        days.append(current_day)
+        current_day += timedelta(days=1)
+
+    return days
                 
 # endpoints 
 @app.route("/")
@@ -394,10 +407,13 @@ def book_event(event_id):
 
     # get remaining tickets
     remaining_tickets = event.get("capacity") - booked_tickets
+
+    #get multiple event days
+    event_days = get_event_days(event["start_date"], event["end_date"])
     
     # return booking page
     if request.method == "GET":
-        return render_template("booking.html", event=event, remaining_tickets= remaining_tickets)
+        return render_template("booking.html", event=event, remaining_tickets= remaining_tickets, event_days=event_days)
 
     # read form
     if request.method == "POST":
@@ -405,7 +421,7 @@ def book_event(event_id):
         quantity_raw = request.form.get("quantity")
         student_discount = request.form.get("student_discount") == "1"
         terms = request.form.get("terms") == "1"
-        event_day = request.form.get("event_day")
+        event_day = request.form.getlist("event_days")
         payment_method = request.form.get("payment_method")
 
         if not payment_method:
@@ -432,6 +448,20 @@ def book_event(event_id):
         flash("Please login to book this event")
         return redirect(url_for("auth.login"))
     
+    # validate selected event day
+    if not event_day:
+        flash("Please select at least one event day.")
+        return redirect(request.url)
+
+    valid_days = {d.isoformat() for d in event_days}
+    if any(day not in valid_days for day in event_day):
+        flash("Invalid event day selected.")
+        return redirect(request.url)
+
+    if event["last_date_booking"] <= datetime.now():
+        flash("This event has already started or ended and can no longer be booked.")
+        return redirect(url_for("event_with_venue", event_id=event_id))
+        
     # validate booking deadline
     if datetime.now() > event["last_date_booking"]:
         flash("Booking for this event is closed.")
@@ -447,9 +477,11 @@ def book_event(event_id):
         return redirect(request.url)
     
     # calculate price
-    unit_price = 0 if event.get("is_free") else float(event.get("price") or 0)
-    base_total = unit_price * quantity
-
+    total_event_days = max(len(event_days), 1)
+    is_free = bool(event.get("is_free"))
+    full_event_price = float(event.get("price") or 0)
+    unit_price = 0 if is_free else round(full_event_price / total_event_days, 2)
+    base_total = unit_price * quantity * len(event_day)
     student_discount_amount = 0
     if student_discount:
         student_discount_amount = round(base_total * 0.10, 2)
@@ -475,12 +507,19 @@ def book_event(event_id):
         
         booking_id = cursor.lastrowid
 
-        booking_event_day = event_day if event_day else event.get("start_date")
+        # create multiple booking item if multiple days
+        event_day = request.form.getlist("event_days")
 
-        # insert into booking_item
-        cursor.execute("""INSERT INTO booking_items (booking_id, event_day, quantity, unit_price) VALUES (%s, %s, %s, %s)
-                       """, (booking_id, booking_event_day, quantity, unit_price))
-        
+        for day in event_day:
+            cursor.execute(
+                """
+                INSERT INTO booking_items (booking_id, event_day, quantity, unit_price)
+                VALUES (%s, %s, %s, %s)
+                """,
+                (booking_id, day, quantity, unit_price)
+            )
+
+
         conn.commit() 
 
         flash("Booking successful.")
