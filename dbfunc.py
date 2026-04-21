@@ -1,3 +1,8 @@
+"""
+    Jennifer Ogechi Okeke - 24040866
+"""
+
+
 import os
 import mysql.connector
 from mysql.connector import errorcode

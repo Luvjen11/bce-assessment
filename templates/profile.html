@@ -114,14 +114,19 @@
         <p><strong>Last name:</strong> {{ user.last_name }}</p>
         <p><strong>Username:</strong> {{ user.username }}</p>
         <p><strong>Email:</strong> {{ user.email }}</p>
+        <!-- <p><strong>Student:</strong> {{ "Yes" if user.is_student else "No" }}</p> -->
     </div>
 
       <div class="d-flex gap-3 flex-wrap">
         <a href="{{ url_for('events') }}" class="btn btn-soft">Browse Events</a>
+        <a href="{{ url_for('update_profile') }}" class="btn btn-outline-soft">Update Profile</a>
         <a href="{{ url_for('auth.update_password') }}" class="btn btn-outline-soft">Update Password</a>
         <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger"
           >Logout</a
         >
+        <form method="POST" action="{{ url_for('delete_profile') }}" onsubmit="return confirm('Delete your account? This only works if you have no bookings.');">
+          <button type="submit" class="btn btn-outline-danger">Delete Account</button>
+        </form>
         {% if session.get("role") == "admin" %}
           <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-soft">
             Admin Dashboard

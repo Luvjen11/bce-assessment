@@ -49,6 +49,14 @@
             </div>
 
             <div class="mb-3">
+              <label class="form-label">Is Free Event?</label>
+              <select name="is_free" class="form-select" required>
+                <option value="0" {% if edit_event and not edit_event.is_free %}selected{% endif %}>No</option>
+                <option value="1" {% if edit_event and edit_event.is_free %}selected{% endif %}>Yes</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
               <label class="form-label">Booking Deadline</label>
               <input type="date" name="last_date_booking" class="form-control"
                 value="{{ edit_event.last_date_booking.strftime('%Y-%m-%d') if edit_event and edit_event.last_date_booking else '' }}" required>
@@ -65,6 +73,20 @@
                   </option>
                 {% endfor %}
               </select>
+            </div>
+
+            {% set selected_category_ids = edit_event.selected_category_ids if edit_event and edit_event.selected_category_ids else [] %}
+            <div class="mb-3">
+              <label class="form-label">Categories</label>
+              <select name="category_ids" class="form-select" multiple>
+                {% for category in categories %}
+                  <option value="{{ category.category_id }}"
+                    {% if category.category_id in selected_category_ids %}selected{% endif %}>
+                    {{ category.name }}
+                  </option>
+                {% endfor %}
+              </select>
+              <div class="form-text">Hold Ctrl/Cmd to select multiple categories.</div>
             </div>
 
             <div class="mb-3">

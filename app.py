@@ -1,3 +1,8 @@
+"""
+    Jennifer Ogechi Okeke - 24040866
+"""
+
+
 from flask import Flask, render_template, request, abort, redirect, flash, url_for, session
 from datetime import datetime, date, timedelta
 from dbfunc import getConnection
@@ -727,7 +732,7 @@ def profile():
 
         # user info
         cursor.execute("""
-            SELECT user_id, first_name, last_name, username, email
+            SELECT user_id, first_name, last_name, username, email, is_student
             FROM users
             WHERE user_id = %s
         """, (user_id,))
@@ -798,6 +803,136 @@ def profile():
             cursor.close()
         conn.close()
 
+
+@app.route("/profile/edit", methods=["GET", "POST"])
+@login_required
+def update_profile():
+    user_id = session.get("user_id")
+
+    conn = getConnection()
+    if conn is None or not conn.is_connected():
+        return "DB Connection Error", 500
+
+    cursor = None
+    try:
+        cursor = conn.cursor(dictionary=True)
+
+        if request.method == "POST":
+            first_name = request.form.get("first_name", "").strip()
+            last_name = request.form.get("last_name", "").strip()
+            username = request.form.get("username", "").strip().lower()
+            email = request.form.get("email", "").strip().lower()
+            is_student = "1" if request.form.get("is_student") == "1" else "0"
+
+            if not first_name or not last_name or not username or not email:
+                flash("All profile fields are required.")
+                return redirect(request.url)
+
+            cursor.execute(
+                """
+                SELECT user_id
+                FROM users
+                WHERE username = %s AND user_id != %s
+                """,
+                (username, user_id)
+            )
+            existing_username = cursor.fetchone()
+            if existing_username:
+                flash("That username is already taken.")
+                return redirect(request.url)
+
+            cursor.execute(
+                """
+                SELECT user_id
+                FROM users
+                WHERE email = %s AND user_id != %s
+                """,
+                (email, user_id)
+            )
+            existing_email = cursor.fetchone()
+            if existing_email:
+                flash("That email is already used by another account.")
+                return redirect(request.url)
+
+            update_cursor = conn.cursor()
+            update_cursor.execute(
+                """
+                UPDATE users
+                SET first_name = %s,
+                    last_name = %s,
+                    username = %s,
+                    email = %s,
+                    is_student = %s
+                WHERE user_id = %s
+                """,
+                (first_name, last_name, username, email, is_student, user_id)
+            )
+            conn.commit()
+            update_cursor.close()
+
+            session["username"] = username
+            flash("Profile updated successfully.")
+            return redirect(url_for("profile"))
+
+        cursor.execute(
+            """
+            SELECT user_id, first_name, last_name, username, email, is_student
+            FROM users
+            WHERE user_id = %s
+            """,
+            (user_id,)
+        )
+        user = cursor.fetchone()
+
+        if not user:
+            return render_template("404.html"), 404
+
+        return render_template("update_profile.html", user=user)
+
+    except Exception as e:
+        print("UPDATE PROFILE ERROR:", e)
+        return "Failed to update profile", 500
+    finally:
+        if cursor:
+            cursor.close()
+        conn.close()
+
+
+@app.route("/profile/delete", methods=["POST"])
+@login_required
+def delete_profile():
+    user_id = session.get("user_id")
+
+    conn = getConnection()
+    if conn is None or not conn.is_connected():
+        return "DB Connection Error", 500
+
+    cursor = None
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM bookings WHERE user_id = %s", (user_id,))
+        booking_count = cursor.fetchone()[0]
+
+        if booking_count > 0:
+            flash("Account cannot be deleted because you already have bookings.")
+            return redirect(url_for("profile"))
+
+        cursor.execute("DELETE FROM waiting_list WHERE user_id = %s", (user_id,))
+        cursor.execute("DELETE FROM users WHERE user_id = %s", (user_id,))
+        conn.commit()
+
+        session.clear()
+        flash("Your account has been deleted.")
+        return redirect(url_for("auth.signup"))
+    except Exception as e:
+        conn.rollback()
+        print("DELETE PROFILE ERROR:", e)
+        return "Failed to delete profile", 500
+    finally:
+        if cursor:
+            cursor.close()
+        conn.close()
+
 """
     Handle booking update flow for the logged-in user.
 
@@ -821,13 +956,16 @@ def update_booking(booking_id):
     try:
         cursor = conn.cursor(dictionary=True)
 
-        # get booking
+        # get booking summary
         cursor.execute("""
             SELECT
                 b.booking_id,
                 b.booking_date,
                 b.status,
                 b.total_price,
+                b.student_discount_amount,
+                b.advance_discount_percent,
+                b.advance_discount_amount,
                 e.event_id,
                 e.name AS event_name,
                 e.start_date,
@@ -836,15 +974,10 @@ def update_booking(booking_id):
                 e.last_date_booking,
                 e.is_free,
                 v.name AS venue_name,
-                v.capacity,
-                bi.booking_item_id,
-                bi.quantity,
-                bi.event_day,
-                bi.unit_price
+                v.capacity
             FROM bookings b
             JOIN events e ON b.event_id = e.event_id
             JOIN venues v ON e.venue_id = v.venue_id
-            JOIN booking_items bi ON b.booking_id = bi.booking_id
             WHERE b.booking_id = %s AND b.user_id = %s
         """, (booking_id, user_id,))
 
@@ -860,6 +993,21 @@ def update_booking(booking_id):
         if booking["start_date"] < datetime.now():
             flash("Past bookings cannot be updated.")
             return redirect(url_for("profile"))
+
+        cursor.execute("""
+            SELECT booking_item_id, event_day, quantity, unit_price
+            FROM booking_items
+            WHERE booking_id = %s
+            ORDER BY event_day ASC
+        """, (booking_id,))
+        booking_items = cursor.fetchall()
+
+        if not booking_items:
+            flash("Booking items were not found.")
+            return redirect(url_for("profile"))
+
+        booking["event_days"] = [item["event_day"] for item in booking_items]
+        booking["quantity"] = booking_items[0]["quantity"]
 
         if request.method == "GET":
             return render_template("update_booking.html", booking=booking)
@@ -888,27 +1036,43 @@ def update_booking(booking_id):
 
         remaining_tickets = booking["capacity"] - booked
 
-        if quantity > remaining_tickets:
-            flash(f"Only {remaining_tickets} tickets are available for this event.")
+        day_count = len(booking_items)
+        requested_tickets = quantity * day_count
+
+        if requested_tickets > remaining_tickets:
+            max_quantity = max(remaining_tickets // day_count, 0)
+            flash(
+                f"Only {remaining_tickets} tickets are available across {day_count} day(s). "
+                f"Maximum quantity per day is {max_quantity}."
+            )
             return redirect(request.url)
 
-        unit_price = 0 if booking["is_free"] else float(booking["price"])
-        # updated price and round to 2 decimal
-        new_total = round(unit_price * quantity, 2)
+        base_total = 0
+        for item in booking_items:
+            base_total += float(item["unit_price"]) * quantity
 
-        # update reciept
+        has_student_discount = float(booking.get("student_discount_amount") or 0) > 0
+        advance_discount_percent = int(booking.get("advance_discount_percent") or 0)
+
+        student_discount_amount = round(base_total * 0.10, 2) if has_student_discount else 0
+        advance_discount_amount = round(base_total * (advance_discount_percent / 100), 2) if advance_discount_percent > 0 else 0
+        new_total = round(base_total - student_discount_amount - advance_discount_amount, 2)
+
+        # update all booking items for multi-day bookings
         cursor.execute("""
             UPDATE booking_items
             SET quantity = %s
-            WHERE booking_item_id = %s
-        """, (quantity, booking["booking_item_id"]))
+            WHERE booking_id = %s
+        """, (quantity, booking_id))
 
         # update actual booking
         cursor.execute("""
             UPDATE bookings
-            SET total_price = %s
+            SET total_price = %s,
+                student_discount_amount = %s,
+                advance_discount_amount = %s
             WHERE booking_id = %s
-        """, (new_total, booking_id))
+        """, (new_total, student_discount_amount, advance_discount_amount, booking_id))
 
         conn.commit()
         flash("Booking updated successfully.")

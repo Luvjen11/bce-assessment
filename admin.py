@@ -1,3 +1,8 @@
+"""
+    Jennifer Ogechi Okeke - 24040866
+"""
+
+
 from flask import Blueprint, render_template, request, redirect, flash, url_for, session, wrappers
 from dbfunc import getConnection
 from datetime import datetime, date 
@@ -290,6 +295,14 @@ def admin_dashboard():
         """)
         users = cursor.fetchall()
 
+        # get categories
+        cursor.execute("""
+            SELECT category_id, name
+            FROM categories
+            ORDER BY name ASC
+        """)
+        categories = cursor.fetchall()
+
         # edit event
         edit_event = None
         if edit_event_id:
@@ -304,12 +317,21 @@ def admin_dashboard():
                     description,
                     image_filename,
                     special_conditions,
-                    venue_id
+                    venue_id,
+                    is_free
                 FROM events
                 WHERE event_id = %s
             """, (edit_event_id,))
-        
-        edit_event = cursor.fetchone()
+
+            edit_event = cursor.fetchone()
+            if edit_event:
+                cursor.execute("""
+                    SELECT category_id
+                    FROM event_categories
+                    WHERE event_id = %s
+                """, (edit_event_id,))
+                selected = cursor.fetchall()
+                edit_event["selected_category_ids"] = [row["category_id"] for row in selected]
 
         # edit venue
         edit_venue = None
@@ -320,7 +342,7 @@ def admin_dashboard():
                 WHERE venue_id = %s
             """, (edit_venue_id,))
 
-        edit_venue = cursor.fetchone()
+            edit_venue = cursor.fetchone()
 
         # get bookings
         bookings = get_all_bookings_for_admin()
@@ -334,7 +356,7 @@ def admin_dashboard():
             except ValueError:
                 flash("Invalid event selected for report.")
             
-        return render_template("admin_dashboard.html", venues=venues, events=events, edit_venue=edit_venue, edit_event=edit_event, users=users, bookings=bookings, report=report)
+        return render_template("admin_dashboard.html", venues=venues, events=events, edit_venue=edit_venue, edit_event=edit_event, users=users, bookings=bookings, report=report, categories=categories)
     
     except Exception as e:
         print(f"Admin dashboard failed: {e}")
@@ -368,6 +390,8 @@ def add_events():
     special_conditions = request.form.get("special_conditions", "").strip()
     image_filename = request.form.get("image_filename", "").strip()
     venue_id = request.form.get("venue_id", "").strip()
+    is_free = 1 if request.form.get("is_free") == "1" else 0
+    category_ids = request.form.getlist("category_ids")
 
     if not name or not start_date or not end_date or not price or not last_date_booking or not venue_id:
             flash("Please fill in all required fields")
@@ -392,10 +416,26 @@ def add_events():
                 description,
                 image_filename,
                 special_conditions,  
-                venue_id
+                venue_id,
+                is_free
             ) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (name, start_date, end_date, price, last_date_booking, description, image_filename, special_conditions, venue_id),)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (name, start_date, end_date, price, last_date_booking, description, image_filename, special_conditions, venue_id, is_free),)
+
+        event_id = cursor.lastrowid
+        for category_id in category_ids:
+            try:
+                category_id_int = int(category_id)
+            except ValueError:
+                continue
+            cursor.execute(
+                """
+                INSERT INTO event_categories (event_id, category_id)
+                VALUES (%s, %s)
+                """,
+                (event_id, category_id_int)
+            )
+
         conn.commit()
         flash("Event added successfully.")
         return redirect(url_for("admin.admin_dashboard"))
@@ -425,6 +465,8 @@ def edit_events(event_id):
     special_conditions = request.form.get("special_conditions", "").strip()
     image_filename = request.form.get("image_filename", "").strip()
     venue_id = request.form.get("venue_id", "").strip()
+    is_free = 1 if request.form.get("is_free") == "1" else 0
+    category_ids = request.form.getlist("category_ids")
 
     if not name or not start_date or not end_date or not price or not last_date_booking or not venue_id:
             flash("Please fill in all required fields")
@@ -450,9 +492,25 @@ def edit_events(event_id):
                 description = %s,
                 image_filename = %s,
                 special_conditions = %s,  
-                venue_id = %s
+                venue_id = %s,
+                is_free = %s
             WHERE event_id = %s
-        """, (name, start_date, end_date, price, last_date_booking, description, image_filename, special_conditions, venue_id, event_id),)
+        """, (name, start_date, end_date, price, last_date_booking, description, image_filename, special_conditions, venue_id, is_free, event_id),)
+
+        cursor.execute("DELETE FROM event_categories WHERE event_id = %s", (event_id,))
+        for category_id in category_ids:
+            try:
+                category_id_int = int(category_id)
+            except ValueError:
+                continue
+            cursor.execute(
+                """
+                INSERT INTO event_categories (event_id, category_id)
+                VALUES (%s, %s)
+                """,
+                (event_id, category_id_int)
+            )
+
         conn.commit()
         flash("Event updated successfully.")
         return redirect(url_for("admin.admin_dashboard"))
@@ -695,7 +753,7 @@ def admin_update_users(user_id):
         flash("Please fill in all required fields")
         return redirect(url_for("admin.admin_dashboard"))
 
-    if role not in ["admin", "user"]:
+    if role not in ["admin", "standard"]:
         flash("Invalid role.")
         return redirect(url_for("admin.admin_dashboard"))
     

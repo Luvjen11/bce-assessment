@@ -27,18 +27,16 @@
           value="{{ booking.quantity }}"
           required
         >
+        <div class="form-text">This quantity will be applied to each selected event day.</div>
       </div>
 
       <div class="mb-3">
-        <label for="event_day" class="form-label">Event Day</label>
-        <input
-          type="text"
-          class="form-control"
-          id="event_day"
-          name="event_day"
-          value="{{ booking.event_day }}"
-          readonly
-        >
+        <label class="form-label">Booked Event Day(s)</label>
+        <ul class="mb-0">
+          {% for day in booking.event_days %}
+            <li>{{ day }}</li>
+          {% endfor %}
+        </ul>
       </div>
 
       <div class="d-flex gap-3 flex-wrap">

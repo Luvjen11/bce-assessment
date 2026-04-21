@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="container py-5">
+  <div class="card shadow-sm border-0 p-4">
+    <h1 class="mb-3" style="color: var(--primary-color);">Update Profile</h1>
+    <p class="text-muted mb-4">Keep your account details up to date.</p>
+
+    <form method="POST">
+      <div class="row g-3">
+        <div class="col-12 col-md-6">
+          <label for="first_name" class="form-label">First Name</label>
+          <input type="text" id="first_name" name="first_name" class="form-control" value="{{ user.first_name }}" required>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <label for="last_name" class="form-label">Last Name</label>
+          <input type="text" id="last_name" name="last_name" class="form-control" value="{{ user.last_name }}" required>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <label for="username" class="form-label">Username</label>
+          <input type="text" id="username" name="username" class="form-control" value="{{ user.username }}" required>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" id="email" name="email" class="form-control" value="{{ user.email }}" required>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <label for="is_student" class="form-label">Student</label>
+          <select id="is_student" name="is_student" class="form-select" required>
+            <option value="0" {% if user.is_student == 0 or user.is_student == "0" %}selected{% endif %}>No</option>
+            <option value="1" {% if user.is_student == 1 or user.is_student == "1" %}selected{% endif %}>Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="d-flex gap-3 flex-wrap mt-4">
+        <button type="submit" class="btn btn-primary">Save Profile</button>
+        <a href="{{ url_for('profile') }}" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

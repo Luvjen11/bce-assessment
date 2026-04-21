@@ -1,3 +1,8 @@
+"""
+    Jennifer Ogechi Okeke - 24040866
+"""
+
+
 from flask import Blueprint, render_template, request, redirect, flash, url_for, session, wrappers
 from dbfunc import getConnection
 from werkzeug.security import generate_password_hash, check_password_hash

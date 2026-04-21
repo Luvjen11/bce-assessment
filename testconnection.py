@@ -1,3 +1,8 @@
+"""
+    Jennifer Ogechi Okeke - 24040866
+"""
+
+
 import mysql.connector, dbfunc, sys
 from mysql.connector import Error
 from dotenv import load_dotenv
