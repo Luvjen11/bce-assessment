@@ -8,6 +8,12 @@ auth = Blueprint("auth",__name__)
 #sign up endpoint
 @auth.route("/signup", methods = ["POST", "GET"])
 def signup():
+    """
+    Register a new user account.
+
+    Returns:
+        Response: Signup page, login redirect, or error response.
+    """
     if request.method == "POST":
         first_name = request.form.get("first_name").strip()
         last_name = request.form.get("last_name").strip()
@@ -48,6 +54,12 @@ def signup():
 #login endpoint
 @auth.route("/login", methods = ["POST", "GET"])
 def login():
+    """
+    Authenticate a user and create a login session.
+
+    Returns:
+        Response: Login page, profile redirect, or error response.
+    """
 
     if request.method == "POST":
         username = request.form.get("username").strip().lower()
@@ -99,6 +111,12 @@ def login():
 @auth.route("/logout")
 # @login_required
 def logout():
+    """
+    Clear the current session and log the user out.
+
+    Returns:
+        Response: Redirect to the login page.
+    """
     session.clear()
     flash("User successfully logged out")
     return redirect(url_for("auth.login"))
@@ -106,6 +124,15 @@ def logout():
 
 # wrapper to secure endpoint
 def login_required(f):
+    """
+    Decorator to restrict access to authenticated users only.
+
+    Args:
+        f (callable): Route function.
+
+    Returns:
+        callable: Wrapped route function with login checks.
+    """
     @wraps(f)
     def wrap(*args, **kwargs):
         if 'user_id' in session:
@@ -119,6 +146,12 @@ def login_required(f):
 @auth.route("/profile/password", methods=["GET", "POST"])
 @login_required
 def update_password():
+    """
+    Allow a logged-in user to update their password.
+
+    Returns:
+        Response: Password update page, profile redirect, or error response.
+    """
     user_id = session.get("user_id")
     
     if request.method == "POST":

@@ -55,6 +55,7 @@ This project demonstrates full-stack web development, relational database design
 - Templating: Jinja2
 - Authentication: Flask sessions
 - Security: Werkzeug password hashing
+- Architecture: Flask Blueprints with a shared `base.html` template for common layout
 
 ### Python Dependencies
 

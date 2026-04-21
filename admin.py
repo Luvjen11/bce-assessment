@@ -11,6 +11,9 @@ def get_all_events_for_admin():
     """
     Fetch all events with venue name, booked tickets, tickets left,
     event status, and dynamic pricing eligibility.
+
+    Returns:
+        list: Event dictionaries including tickets_left, event_status, and eligible_dynamic.
     """
     conn = getConnection()
     if conn is None or not conn.is_connected():
@@ -77,6 +80,9 @@ def get_all_bookings_for_admin():
     """
     Fetch all bookings with event name, username, booking date,
     total price, and booking status.
+
+    Returns:
+        list: Booking dictionaries ordered by booking date descending.
     """
     conn = getConnection()
     if conn is None or not conn.is_connected():
@@ -115,6 +121,12 @@ def get_event_report(event_id):
     - number of confirmed bookings
     - profit earned
     - tickets left
+
+    Args:
+        event_id (int): Event identifier.
+
+    Returns:
+        dict | None: Report with booking count, profit, and tickets left.
     """
     conn = getConnection()
     if conn is None or not conn.is_connected():
@@ -159,6 +171,15 @@ def get_event_report(event_id):
 
 
 def admin_required(f):
+    """
+    Decorator to restrict access to authenticated admin users only.
+
+    Args:
+        f (callable): Route function.
+
+    Returns:
+        callable: Wrapped route function with admin access checks.
+    """
     @wraps(f)
     def wrapper(*args, **kwargs):
         if 'user_id' not in session:
@@ -175,6 +196,12 @@ def admin_required(f):
 #login endpoint
 @admin.route("/login", methods = ["POST", "GET"])
 def admin_login():
+    """
+    Handle admin authentication and session setup.
+
+    Returns:
+        Response: Login page, dashboard redirect, or error response.
+    """
 
     if request.method == "POST":
         username = request.form.get("username").strip().lower()
@@ -226,15 +253,11 @@ def admin_login():
 @admin.route("/dashboard")
 @admin_required
 def admin_dashboard():
-
     """
-    Admin dashboard view.
+    Render admin dashboard with events, venues, users, bookings, and optional event report.
 
-    Provides:
-    - Event and venue management data
-    - Booking status lookup by booking id
-    - Event booking status
-    - Admin reports 
+    Returns:
+        Response: Rendered admin dashboard or error response.
     """
 
     edit_event_id = request.args.get("edit_event_id", type=int)

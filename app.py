@@ -16,6 +16,15 @@ app.register_blueprint(error_page)
 
 # functions 
 
+"""
+    Fetch events with venue details and optional category filtering.
+
+    Args:
+        category_name (str, optional): Category name to filter events.
+
+    Returns:
+        list | None: A list of event dictionaries, or None if connection fails.
+"""
 # fetch all events
 def get_all_events_with_venue_and_category(category_name=None):
 
@@ -101,8 +110,18 @@ def get_all_events_with_venue_and_category(category_name=None):
                 cursor.close()
             conn.close()
 
+
+"""
+    Fetch a single event and its venue details by event ID.
+
+    Args:
+        event_id (int): Event identifier.
+
+    Returns:
+        dict | None: Event dictionary if found, otherwise None.
+"""
 # fetch one single event
-def get_event_with_venue(event_id):
+def get_event_with_venue(event_id): 
         conn = getConnection()
         if conn is None or not conn.is_connected():
             return None
@@ -141,6 +160,12 @@ def get_event_with_venue(event_id):
                 cursor.close()
             conn.close()
 
+"""
+    Fetch all event categories ordered by name.
+
+    Returns:
+        list | None: A list of category dictionaries, or None if connection fails.
+"""
 # fetch categories 
 def get_all_categories():
     conn = getConnection()
@@ -167,6 +192,15 @@ def get_all_categories():
             cursor.close()
         conn.close()
 
+"""
+    Get the total confirmed tickets booked for an event.
+
+    Args:
+        event_id (int): Event identifier.
+
+    Returns:
+        int: Number of confirmed tickets booked. Returns 0 on error.
+"""
 # get tickets booked for event 
 def get_tickets_booked_for_event(event_id):
     conn = getConnection()
@@ -195,6 +229,16 @@ def get_tickets_booked_for_event(event_id):
             cursor.close()
         conn.close()
 
+"""
+    Calculate cancellation fee and refund amount based on event start date.
+
+    Args:
+        total_price (float): Original booking total.
+        start_date (datetime): Event start datetime.
+
+    Returns:
+        tuple: (fee, refund), both rounded to 2 decimal places.
+"""
 # cancellation fee logic
 def calculate_cancellation_fee(total_price, start_date):
     days_before = (start_date.date() - datetime.now().date()).days
@@ -209,6 +253,12 @@ def calculate_cancellation_fee(total_price, start_date):
     refund = total_price - fee
     return round(fee, 2), round(refund, 2)
 
+"""
+    Filter upcoming events using search text, date filters, free-only flag, and category.
+
+    Returns:
+        list: A list of filtered event dictionaries. Returns an empty list on error.
+"""
 # filter events
 def filter_events(search=None, selected_date=None, start_date=None, end_date=None, free_only=None, category=None):
     
@@ -295,9 +345,16 @@ def filter_events(search=None, selected_date=None, start_date=None, end_date=Non
             cursor.close()
         conn.close()
 
-# advance booking discount
-from datetime import datetime
+"""
+    Determine advance booking discount percentage from days before event.
 
+    Args:
+        event_start_date (datetime): Event start datetime.
+
+    Returns:
+        int: Discount percent based on configured tiers.
+"""
+# advance booking discount
 def get_advance_discount_percent(event_start_date):
     """
     Return the advance booking discount percentage
@@ -316,6 +373,16 @@ def get_advance_discount_percent(event_start_date):
     else:
         return 0
 
+"""
+    Generate a list of calendar days between event start and end dates (inclusive).
+
+    Args:
+        start_date (datetime): Event start datetime.
+        end_date (datetime): Event end datetime.
+
+    Returns:
+        list: List of date objects for selectable event days.
+"""
 def get_event_days(start_date, end_date):
 
     days = []
@@ -327,7 +394,13 @@ def get_event_days(start_date, end_date):
         current_day += timedelta(days=1)
 
     return days
-                
+
+"""
+    Render the home page with all events split into upcoming and past groups.
+
+    Returns:
+        Response: Rendered index page.
+"""         
 # endpoints 
 @app.route("/")
 @app.route("/index")
@@ -350,6 +423,12 @@ def about():
 def contact():
     return render_template("contact.html")
 
+"""
+    Render the events listing page with filters and category selection.
+
+    Returns:
+        Response: Rendered events page.
+"""
 @app.route("/events")
 def events():
     category = request.args.get("category", "all")
@@ -382,6 +461,15 @@ def events():
         free_only=free_only
     )
 
+"""
+    Render event details page for a specific event.
+
+    Args:
+        event_id (int): Event identifier.
+
+    Returns:
+        Response: Event page or 404 page.
+"""
 # fetch one single event endpoint
 @app.route("/event/<int:event_id>", methods=["GET"])
 def event_with_venue(event_id):
@@ -391,6 +479,16 @@ def event_with_venue(event_id):
 
     return render_template("event.html", event=event)
 
+"""
+    Handle event booking flow: display booking form and create confirmed bookings.
+
+    Notes:
+        Supports multi-day selection, discount calculation, capacity checks,
+        and waiting-list redirection for full events.
+
+    Returns:
+        Response: Booking page, redirect to receipt, or error response.
+"""
 # book an event
 @app.route("/event/<int:event_id>/book", methods=["GET", "POST"])
 def book_event(event_id):
@@ -533,6 +631,15 @@ def book_event(event_id):
                 cursor.close()
             conn.close()
     
+"""
+    Render booking receipt for the logged-in user.
+
+    Args:
+        booking_id (int): Booking identifier.
+
+    Returns:
+        Response: Receipt page, login redirect, or 404/error response.
+"""
 # reciept page
 @app.route("/booking/<int:booking_id>/receipt", methods=["GET"])
 def booking_receipt(booking_id):
@@ -599,6 +706,12 @@ def privacy():
 def terms():
     return render_template("terms.html")
 
+"""
+    Render user profile with upcoming, past, cancelled bookings and offered waiting-list places.
+
+    Returns:
+        Response: Rendered profile page.
+"""
 @app.route("/profile")
 @login_required
 def profile():
@@ -685,6 +798,15 @@ def profile():
             cursor.close()
         conn.close()
 
+"""
+    Handle booking update flow for the logged-in user.
+
+    Args:
+        booking_id (int): Booking identifier.
+
+    Returns:
+        Response: Update page, redirect, or error response.
+"""
 @app.route("/booking/<int:booking_id>/update", methods=["GET", "POST"])
 @login_required
 def update_booking(booking_id):
@@ -801,6 +923,15 @@ def update_booking(booking_id):
             cursor.close()
         conn.close()
 
+"""
+    Cancel a booking, calculate fee/refund, and promote first waiting-list user to offered status.
+
+    Args:
+        booking_id (int): Booking identifier.
+
+    Returns:
+        Response: Redirect to profile or error response.
+"""
 @app.route("/booking/<int:booking_id>/cancel", methods=["GET", "POST"])
 @login_required
 def cancel_booking(booking_id):
@@ -893,6 +1024,15 @@ def cancel_booking(booking_id):
             cursor.close()
         conn.close()
 
+"""
+    Add the logged-in user to the waiting list for a full event.
+
+    Args:
+        event_id (int): Event identifier.
+
+    Returns:
+        Response: Redirect to event details page.
+"""
 @app.route("/event/<int:event_id>/waiting-list",methods=["POST"])
 @login_required
 def join_waiting_list(event_id):
