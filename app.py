@@ -1209,6 +1209,21 @@ def join_waiting_list(event_id):
     cursor=conn.cursor()
 
     try:
+        cursor.execute(
+            """
+            SELECT waiting_id
+            FROM waiting_list
+            WHERE event_id = %s AND user_id = %s
+            LIMIT 1
+            """,
+            (event_id, user_id)
+        )
+        existing_entry = cursor.fetchone()
+
+        if existing_entry:
+            flash("You are already on the waiting list for this event.")
+            return redirect(url_for("event_details", event_id=event_id))
+
         cursor.execute("""
                     INSERT INTO waiting_list (event_id, user_id, joined_at, status)
                     VALUES (%s, %s, %s, %s)
